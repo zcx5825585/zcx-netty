@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TcpClient {
-    private static final Logger logger = LoggerFactory.getLogger(TcpClient.class);
+    private static final Logger log = LoggerFactory.getLogger(TcpClient.class);
 
     public static void main(String[] args) {
         String ip = "127.0.0.1";
@@ -32,9 +32,9 @@ public class TcpClient {
                 });
         bootstrap.connect(ip, port).addListener((future) -> {
             if (future.isSuccess()) {
-                logger.info("connect {}:{} success.", ip, port);
+                log.info("connect {}:{} success.", ip, port);
             } else {
-                logger.error("connect {}:{} fail", ip, port, future.cause());
+                log.error("connect {}:{} fail", ip, port, future.cause());
             }
         });
     }
