@@ -17,7 +17,7 @@ import javax.annotation.Resource;
 
 @Component
 public class NettyTcpServer implements CommandLineRunner {
-    private static final Logger log = LoggerFactory.getLogger(NettyTcpServer.class);
+    private final Logger log = LoggerFactory.getLogger(NettyTcpServer.class);
     @Resource
     private ServerGatewayHandler gatewayHandler;
 

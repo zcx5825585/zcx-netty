@@ -33,11 +33,33 @@ public class ClassRegisterService implements ApplicationContextAware {
     }
 
     public boolean registerBean(ClassRegisterInfo registerInfo) {
-        if (genericApplicationContext.isBeanNameInUse(registerInfo.getBeanName())) {
+        String beanName = registerInfo.getBeanName();
+        if (genericApplicationContext.isBeanNameInUse(beanName)) {
             if (registerInfo.isReCompiler()) {
-                genericApplicationContext.removeBeanDefinition(registerInfo.getBeanName());
+                genericApplicationContext.removeBeanDefinition(beanName);
             } else {
                 return true;
+            }
+        }
+        //以其他bean为基础
+        if (genericApplicationContext.isBeanNameInUse(registerInfo.getBaseBeanName())) {
+            Class clazz = genericApplicationContext.getType(registerInfo.getBaseBeanName());
+            if (ConfigurableBean.class.isAssignableFrom(clazz)) {
+                try {
+                    ConfigurableBean object = (ConfigurableBean)clazz.getConstructor().newInstance();
+                    BeanParam.paramsCheck(object.getParamList(), registerInfo.getArgs());
+                } catch (BeanException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new BeanException("参数校验失败");
+                }
+                genericApplicationContext.registerBean(beanName, clazz);
+                ConfigurableBean configurableBean = (ConfigurableBean) genericApplicationContext.getBean(beanName);
+                configurableBean.setBeanName(beanName);
+                configurableBean.config(registerInfo.getArgs());
+                return true;
+            } else {
+                throw new BeanException("基础bean不可配置");
             }
         }
         for (ClassRegisterInfo dependClass : registerInfo.getDependClass()) {
@@ -47,7 +69,7 @@ public class ClassRegisterService implements ApplicationContextAware {
         }
         Class clazz = loadClass(registerInfo);
         //注册bean
-        genericApplicationContext.registerBean(registerInfo.getBeanName(), clazz);
+        genericApplicationContext.registerBean(beanName, clazz);
         return true;
     }
 
@@ -99,6 +121,9 @@ public class ClassRegisterService implements ApplicationContextAware {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler(); //调用动态编译的工具
         //进行动态编译，并返回结果
         int result = compiler.run(null, null, null, javaPath);
+        if (result != 0) {
+            throw new BeanException("编译class失败：编译失败");
+        }
         return result == 0;
     }
 

@@ -29,6 +29,7 @@ public class TcpHandler extends AbstractDynamicHandler<String> implements Dynami
     }
 
     private int count = 0;
+    private boolean flag = true;
 
     //收到数据时调用
     @Override
@@ -64,7 +65,21 @@ public class TcpHandler extends AbstractDynamicHandler<String> implements Dynami
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-
+        if (flag) {
+            flag = false;
+            new Thread(() -> {
+                while (true) {
+                    try {
+                        Thread.sleep(5 * 1000L);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    for (ChannelHandlerContext one : channelMap.values()) {
+                        one.channel().writeAndFlush("test");
+                    }
+                }
+            }).start();
+        }
     }
 
 }

@@ -1,7 +1,11 @@
 package org.zcx.netty.web.service;
 
 import org.springframework.stereotype.Service;
+import org.zcx.netty.client.NettyClientRunner;
+import org.zcx.netty.common.DynamicHandler;
 import org.zcx.netty.common.HandlerManager;
+import org.zcx.netty.common.bean.ClassRegisterInfo;
+import org.zcx.netty.common.exception.HandlerException;
 import org.zcx.netty.web.dao.HandlerInfoDao;
 import org.zcx.netty.web.entity.HandlerInfo;
 
@@ -12,9 +16,12 @@ import java.util.stream.Collectors;
 @Service
 public class HandlerService {
     @Resource
+    private NettyClientRunner clientRunner;
+    @Resource
     private HandlerManager handlerManager;
     @Resource
     private HandlerInfoDao handlerDao;
+
 
     public HandlerInfo getById(Long id) {
         HandlerInfo handlerInfo = handlerDao.getById(id);
@@ -41,6 +48,22 @@ public class HandlerService {
 
     public void register(Long id) {
         HandlerInfo handlerInfo = handlerDao.getById(id);
-        handlerManager.registerHandler(handlerInfo.getHandlerName(), handlerInfo.getPackageName());
+        ClassRegisterInfo classRegisterInfo = new ClassRegisterInfo();
+        classRegisterInfo.setBeanName(handlerInfo.getHandlerName());
+        classRegisterInfo.setBaseBeanName(handlerInfo.getBaseHandlerName());
+        classRegisterInfo.setPackageName(handlerInfo.getPackageName());
+        classRegisterInfo.setArgs(handlerInfo.getArgs());
+        classRegisterInfo.setReCompiler(false);
+        classRegisterInfo.setSpringBean(true);
+        handlerManager.registerHandler(classRegisterInfo);
+    }
+
+    public void connect(Long handlerId, String host, Integer port) {
+        HandlerInfo handlerInfo = getById(handlerId);
+        DynamicHandler handler=handlerInfo.getHandler();
+        if (handler==null){
+            throw new HandlerException("handler未初始化");
+        }
+        clientRunner.runHandlerAsClient(host, port, handler);
     }
 }

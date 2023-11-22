@@ -14,4 +14,6 @@ public interface DynamicHandler extends ChannelHandler {
 
     public void sendMsg(String channelId, Object msg);
 
+    public void disconnect(String channelId) throws Exception;
+
 }

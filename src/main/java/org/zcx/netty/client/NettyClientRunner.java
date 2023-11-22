@@ -12,7 +12,7 @@ import org.zcx.netty.common.DynamicHandler;
 
 @Component
 public class NettyClientRunner {
-    private static final Logger log = LoggerFactory.getLogger(NettyClientRunner.class);
+    private final Logger log = LoggerFactory.getLogger(NettyClientRunner.class);
 
     public void runHandlerAsClient(String ip, int port, DynamicHandler handler) {
         new Bootstrap().group(new NioEventLoopGroup())

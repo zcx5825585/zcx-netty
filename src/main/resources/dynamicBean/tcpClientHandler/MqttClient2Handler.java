@@ -1,4 +1,4 @@
-package org.zcx.netty.client;
+package dynamicBean.tcpClientHandler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -11,70 +11,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.zcx.netty.client.mqtt.dto.MyMqttMessage;
-import org.zcx.netty.common.bean.BeanParam;
-import org.zcx.netty.common.bean.ConfigurableBean;
 import org.zcx.netty.common.abstractHandler.AbstractMqttClientHandler;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 @Component
 @ChannelHandler.Sharable
-public class MqttClientHandler extends AbstractMqttClientHandler implements ConfigurableBean {
-    private final Logger log = LoggerFactory.getLogger(MqttClientHandler.class);
-
-    private String beanName = "mqttClientHandler";
-
-    private boolean isConfigured = false;
-    private String defaultTopic;
-    private String userName;
-    private String password;
-
-    @Override
-    public boolean isConfigured() {
-        return isConfigured;
-    }
-
-    @Override
-    public void config(Map<String, Object> param) {
-        this.defaultTopic = (String) param.get("defaultTopic");
-        this.userName = (String) param.get("userName");
-        this.password = (String) param.get("password");
-        this.isConfigured = true;
-    }
-
-    @Override
-    public List<BeanParam> getParamList() {
-        return Arrays.asList(
-                new BeanParam("defaultTopic",String.class),
-                new BeanParam("userName",String.class),
-                new BeanParam("password",String.class)
-        );
-    }
-
-    @Override
-    public void setBeanName(String beanName) {
-        this.beanName = beanName;
-    }
-    @Override
-    public String getHandlerName() {
-        return beanName;
-    }
+public class MqttClient2Handler extends AbstractMqttClientHandler {
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    //47.105.217.47
+    //1883
 
     @Override
     public String getDefaultTopic() {
-        return defaultTopic;
+        return "testtopic2/#";
     }
 
     @Override
     public String getUserName() {
-        return userName;
+        return "smartsite";
     }
 
     @Override
     public String getPassword() {
-        return password;
+        return "smartsite12347988";
     }
 
     @Override
@@ -86,12 +47,8 @@ public class MqttClientHandler extends AbstractMqttClientHandler implements Conf
         super.sendMsg(channelId, mqttMessage);
     }
 
-    private int count = 0;
-
     @Override
     public void channelRead1(ChannelHandlerContext ctx, MqttMessage mqttMessage) {
-        count++;
-        log.info("count " + count);
         MqttPublishMessage mqttPublishMessage = (MqttPublishMessage) mqttMessage;
         ByteBuf payload = mqttPublishMessage.payload();
         String message = payload.toString(CharsetUtil.UTF_8);
@@ -100,5 +57,4 @@ public class MqttClientHandler extends AbstractMqttClientHandler implements Conf
         String channelId = ctx.channel().id().asShortText();
         log.info(getHandlerName() + "[" + channelId + "]" + "接收到mqtt消息 " + "\n" + mqttMessage.fixedHeader().toString() + "\n" + mqttMessage.variableHeader().toString() + "  \n" + message);
     }
-
 }

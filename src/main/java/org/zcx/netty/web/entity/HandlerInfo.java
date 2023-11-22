@@ -2,10 +2,14 @@ package org.zcx.netty.web.entity;
 
 import org.zcx.netty.common.DynamicHandler;
 
+import java.util.Map;
+
 public class HandlerInfo {
     private Long id;
     private String handlerName;
+    private String baseHandlerName;
     private Long groupId;
+    private Map<String, Object> args;
     private HandlerGroup group;
     private DynamicHandler handler;
 
@@ -62,4 +66,22 @@ public class HandlerInfo {
         return group.getPackageName();
     }
 
+    public String getBaseHandlerName() {
+        if (baseHandlerName == null) {
+            return handlerName;
+        }
+        return baseHandlerName;
+    }
+
+    public void setBaseHandlerName(String baseHandlerName) {
+        this.baseHandlerName = baseHandlerName;
+    }
+
+    public Map<String, Object> getArgs() {
+        return args;
+    }
+
+    public void setArgs(Map<String, Object> args) {
+        this.args = args;
+    }
 }

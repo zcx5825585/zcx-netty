@@ -13,7 +13,7 @@ import org.zcx.netty.common.DynamicHandler;
 import org.zcx.netty.common.utils.SpringUtils;
 
 @ChannelHandler.Sharable
-public abstract class AbstractWsHandler extends AbstractDynamicHandler<TextWebSocketFrame> implements DynamicHandler {
+public abstract class AbstractWsHandler extends AbstractDynamicHandler<TextWebSocketFrame> {
     private final Log log = LogFactory.getLog(this.getClass());
 
     public abstract String getWebsocketPath();

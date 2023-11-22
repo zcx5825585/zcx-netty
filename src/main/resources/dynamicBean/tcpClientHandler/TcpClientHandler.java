@@ -18,7 +18,8 @@ import java.io.IOException;
 @ChannelHandler.Sharable
 public class TcpClientHandler extends AbstractDynamicHandler<String> implements DynamicHandler {
     private final Log log = LogFactory.getLog(this.getClass());
-
+    //127.0.0.1
+    //18021
 
     public ChannelHandler[] initHandlers() {
         return new ChannelHandler[]{

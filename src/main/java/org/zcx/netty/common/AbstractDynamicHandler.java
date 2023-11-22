@@ -29,6 +29,15 @@ public abstract class AbstractDynamicHandler<I> extends SimpleChannelInboundHand
     }
 
     @Override
+    public void disconnect(String channelId) throws Exception {
+        ChannelHandlerContext ctx = channelMap.get(channelId);
+        if (ctx != null) {
+            channelInactive(ctx);
+        }
+
+    }
+
+    @Override
     public String getHandlerName() {
         return Introspector.decapitalize(this.getClass().getSimpleName());
     }

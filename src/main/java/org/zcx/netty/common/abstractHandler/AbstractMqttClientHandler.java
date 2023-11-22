@@ -16,14 +16,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<MqttMessage> {
-    private static final Logger log = LoggerFactory.getLogger(AbstractMqttClientHandler.class);
+    private final Logger log = LoggerFactory.getLogger(AbstractMqttClientHandler.class);
 
     protected Set<String> topicMap = new HashSet<>();
 
     @Resource
     protected MqttMsgBack mqttMsgBack;
 
-    public abstract String[] getDefaultTopic();
+    public abstract String getDefaultTopic();
 
     public abstract String getUserName();
 
@@ -36,10 +36,12 @@ public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<M
 
     @Override
     public ChannelHandler[] initHandlers() {
+        DynamicHandler handler = SpringUtils.getBean(getHandlerName(), DynamicHandler.class);
+        log.info(handler.getHandlerName());
         return new ChannelHandler[]{
                 new MqttDecoder(1024 * 8),
                 MqttEncoder.INSTANCE,
-                SpringUtils.getBean(getHandlerName(), DynamicHandler.class)
+                handler
         };
     }
 
@@ -89,9 +91,7 @@ public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<M
                 case CONNACK:
                     mqttMsgBack.receiveConnectionAck(ctx, mqttMessage);
                     //连接成功后开始订阅
-                    for (String topic : getDefaultTopic()) {
-                        subscribe(ctx.channel().id().asShortText(), topic);
-                    }
+                    subscribe(ctx.channel().id().asShortText(), getDefaultTopic());
                     break;
                 case PUBREC:
                     mqttMsgBack.receivePubRfc(ctx, mqttMessage);

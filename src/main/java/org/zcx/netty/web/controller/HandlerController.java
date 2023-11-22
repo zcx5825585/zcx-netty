@@ -32,10 +32,22 @@ public class HandlerController {
         return "success";
     }
 
-
     @PostMapping("register")
     public String register(Long id) throws Exception {
         handlerService.register(id);
+        return "success";
+    }
+
+    @GetMapping("connect")
+    public String connect(Long handlerId,String host,Integer port) throws Exception {
+        handlerService.connect(handlerId, host, port);
+        return "success";
+    }
+
+    @GetMapping("disconnect")
+    public String disconnect(Long handlerId,String channelId) throws Exception {
+        DynamicHandler writableHandler = handlerService.getById(handlerId).getHandler();
+        writableHandler.disconnect(channelId);
         return "success";
     }
 
