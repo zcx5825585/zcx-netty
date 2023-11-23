@@ -10,20 +10,18 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
+import org.zcx.netty.common.DynamicHandler;
 
 @Component
-public class NettyTcpServer implements CommandLineRunner {
+public class NettyTcpServer {
     private final Logger log = LoggerFactory.getLogger(NettyTcpServer.class);
-    @Resource
-    private ServerGatewayHandler gatewayHandler;
+//    @Resource
+//    private ServerGatewayHandler gatewayHandler;
 
     private int port = 18021;
 
-    public void start() throws Exception {
+    public void runHandlerAsServer(int port, DynamicHandler handler) throws Exception {
         //NioEventLoopGroup是用来处理IO操作的多线程事件循环器
         EventLoopGroup bossGroup = new NioEventLoopGroup();  // 用来接收进来的连接
         EventLoopGroup workerGroup = new NioEventLoopGroup();// 用来处理已经被接收的连接
@@ -35,7 +33,8 @@ public class NettyTcpServer implements CommandLineRunner {
                     protected void initChannel(SocketChannel ch) throws Exception {
 //                        ch.pipeline().addLast(new TestHandler());
                         // 自定义处理类
-                        ch.pipeline().addLast(gatewayHandler);
+//                        ch.pipeline().addLast(gatewayHandler);
+                        ch.pipeline().addLast(handler.initHandlers());
                     }
                 });
         server.option(ChannelOption.SO_BACKLOG, 128);
@@ -49,8 +48,8 @@ public class NettyTcpServer implements CommandLineRunner {
         });
     }
 
-    @Override
-    public void run(String... args) throws Exception {
-        this.start();
-    }
+//    @Override
+//    public void run(String... args) throws Exception {
+//        this.start();
+//    }
 }

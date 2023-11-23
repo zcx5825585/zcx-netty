@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 import org.zcx.netty.common.DynamicHandler;
 
 @Component
-public class NettyClientRunner {
-    private final Logger log = LoggerFactory.getLogger(NettyClientRunner.class);
+public class NettyTcpClientRunner {
+    private final Logger log = LoggerFactory.getLogger(NettyTcpClientRunner.class);
 
     public void runHandlerAsClient(String ip, int port, DynamicHandler handler) {
         new Bootstrap().group(new NioEventLoopGroup())

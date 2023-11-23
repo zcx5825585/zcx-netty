@@ -1,7 +1,8 @@
 package org.zcx.netty.web.service;
 
 import org.springframework.stereotype.Service;
-import org.zcx.netty.bootstrap.NettyClientRunner;
+import org.zcx.netty.bootstrap.NettyTcpClientRunner;
+import org.zcx.netty.bootstrap.NettyTcpServer;
 import org.zcx.netty.common.DynamicHandler;
 import org.zcx.netty.common.HandlerManager;
 import org.zcx.netty.common.bean.ClassRegisterInfo;
@@ -10,13 +11,16 @@ import org.zcx.netty.web.dao.HandlerInfoDao;
 import org.zcx.netty.web.entity.HandlerInfo;
 
 import javax.annotation.Resource;
+import java.net.BindException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class HandlerService {
     @Resource
-    private NettyClientRunner clientRunner;
+    private NettyTcpServer serverRunner;
+    @Resource
+    private NettyTcpClientRunner clientRunner;
     @Resource
     private HandlerManager handlerManager;
     @Resource
@@ -65,5 +69,18 @@ public class HandlerService {
             throw new HandlerException("handler未初始化");
         }
         clientRunner.runHandlerAsClient(host, port, handler);
+    }
+
+    public void serverStart(Long handlerId,Integer port) throws Exception {
+        HandlerInfo handlerInfo = getById(handlerId);
+        DynamicHandler handler = handlerInfo.getHandler();
+        if (handler == null) {
+            throw new HandlerException("handler未初始化");
+        }
+        try {
+            serverRunner.runHandlerAsServer(port, handler);
+        }catch (BindException e){
+            throw new HandlerException("端口已占用");
+        }
     }
 }

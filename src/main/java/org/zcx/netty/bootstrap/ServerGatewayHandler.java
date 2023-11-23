@@ -33,8 +33,16 @@ public class ServerGatewayHandler extends ChannelInboundHandlerAdapter {
         log.info("连接的客户端地址:" + ctx.channel().remoteAddress());
         log.info("连接的客户端ID:" + ctx.channel().id());
         //建立连接时设置handler
-        setHandlers(ctx);
+//        setHandlers(ctx);
         super.channelActive(ctx);
+    }
+
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        //接收到心跳包 服务升级
+        HandlerInfo handlerInfo = handlerDao.getBySn("tcpHandler");
+        DynamicHandler dynamicHandler = handlerManager.getDynamicHandler(handlerInfo.getHandlerName());
+        ctx.pipeline().addLast(dynamicHandler.initHandlers());
     }
 
     private int count = 0;

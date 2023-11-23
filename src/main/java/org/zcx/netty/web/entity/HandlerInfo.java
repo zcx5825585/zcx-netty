@@ -13,6 +13,8 @@ public class HandlerInfo {
     private HandlerGroup group;
     private String packageName;
     private DynamicHandler handler;
+    private Boolean autoRegister = true;
+    private Boolean isRunning = false;
 
     public HandlerInfo() {
     }
@@ -88,5 +90,21 @@ public class HandlerInfo {
 
     public void setArgs(Map<String, Object> args) {
         this.args = args;
+    }
+
+    public Boolean getRunning() {
+        return isRunning;
+    }
+
+    public void setRunning(Boolean running) {
+        isRunning = running;
+    }
+
+    public Boolean getAutoRegister() {
+        return autoRegister;
+    }
+
+    public void setAutoRegister(Boolean autoRegister) {
+        this.autoRegister = autoRegister;
     }
 }

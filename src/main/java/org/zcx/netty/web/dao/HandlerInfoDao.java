@@ -28,7 +28,7 @@ public class HandlerInfoDao {
 
     @PostConstruct
     public void init() {
-//        this.add(new HandlerInfo(1L, "httpHandler", 1L));
+        this.add(new HandlerInfo(1L, "httpHandler", 1L));
         this.add(new HandlerInfo(2L, "tcpHandler", 1L));
 //        this.add(new HandlerInfo(3L, "wsHandler", 1L));
 //        this.add(new HandlerInfo(4L, "ws2Handler", 1L));
@@ -107,4 +107,7 @@ public class HandlerInfoDao {
         map.remove(id);
     }
 
+    public HandlerInfo getBySn(String sn) {
+        return getByName(sn);
+    }
 }

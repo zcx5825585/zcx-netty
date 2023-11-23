@@ -37,6 +37,12 @@ public class HandlerController {
         return handlerService.register(id);
     }
 
+    @GetMapping("serverStart")
+    public String serverStart(Long handlerId, Integer port) throws Exception {
+        handlerService.serverStart(handlerId, port);
+        return "success";
+    }
+
     @GetMapping("connect")
     public String connect(Long handlerId, String host, Integer port) throws Exception {
         handlerService.connect(handlerId, host, port);

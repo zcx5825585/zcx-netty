@@ -36,9 +36,9 @@ public class HttpHandler extends AbstractDynamicHandler<FullHttpRequest> impleme
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         count++;
-        log.info(getHandlerName() + "接收到http消息 " + "\n" + request.toString());
         String uri = request.uri();
         String body = getBody(request);
+        log.info(getHandlerName() + "接收到http消息 " + "\n" + request.toString() + "\n" + getBody(request));
         RequestHelper.sendTxt(ctx, "http connect " + count);
     }
 
