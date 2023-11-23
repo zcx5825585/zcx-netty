@@ -1,4 +1,4 @@
-package org.zcx.netty.client;
+package org.zcx.netty.handler.configurableHandler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -10,10 +10,11 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.zcx.netty.client.mqtt.dto.MyMqttMessage;
+import org.zcx.netty.common.DynamicHandler;
+import org.zcx.netty.depended.mqtt.dto.MyMqttMessage;
+import org.zcx.netty.handler.abstractHandler.AbstractMqttClientHandler;
 import org.zcx.netty.common.bean.BeanParam;
 import org.zcx.netty.common.bean.ConfigurableBean;
-import org.zcx.netty.common.abstractHandler.AbstractMqttClientHandler;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.Map;
 
 @Component
 @ChannelHandler.Sharable
-public class MqttClientHandler extends AbstractMqttClientHandler implements ConfigurableBean {
+public class MqttClientHandler extends AbstractMqttClientHandler implements ConfigurableBean, DynamicHandler {
     private final Logger log = LoggerFactory.getLogger(MqttClientHandler.class);
 
     private String beanName = "mqttClientHandler";
@@ -47,9 +48,9 @@ public class MqttClientHandler extends AbstractMqttClientHandler implements Conf
     @Override
     public List<BeanParam> getParamList() {
         return Arrays.asList(
-                new BeanParam("defaultTopic",String.class),
-                new BeanParam("userName",String.class),
-                new BeanParam("password",String.class)
+                new BeanParam("defaultTopic", String.class),
+                new BeanParam("userName", String.class),
+                new BeanParam("password", String.class)
         );
     }
 
@@ -57,6 +58,7 @@ public class MqttClientHandler extends AbstractMqttClientHandler implements Conf
     public void setBeanName(String beanName) {
         this.beanName = beanName;
     }
+
     @Override
     public String getHandlerName() {
         return beanName;

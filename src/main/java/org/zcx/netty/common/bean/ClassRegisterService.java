@@ -46,7 +46,7 @@ public class ClassRegisterService implements ApplicationContextAware {
             Class clazz = genericApplicationContext.getType(registerInfo.getBaseBeanName());
             if (ConfigurableBean.class.isAssignableFrom(clazz)) {
                 try {
-                    ConfigurableBean object = (ConfigurableBean)clazz.getConstructor().newInstance();
+                    ConfigurableBean object = (ConfigurableBean) clazz.getConstructor().newInstance();
                     BeanParam.paramsCheck(object.getParamList(), registerInfo.getArgs());
                 } catch (BeanException e) {
                     throw e;

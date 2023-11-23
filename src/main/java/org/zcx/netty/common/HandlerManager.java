@@ -7,17 +7,17 @@ import org.zcx.netty.common.bean.ConfigurableBean;
 import org.zcx.netty.common.utils.SpringUtils;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.Map;
 
 @Component
 public class HandlerManager {
     @Resource
     private ClassRegisterService beanRegisterService;
-    @Resource
-    private Map<String, DynamicHandler> handlerMap;
 
+    private static final Map<String, DynamicHandler> handlerMap = new HashMap<>();
 
-    public DynamicHandler getDynamicHandler(String handlerName) {
+    public static DynamicHandler getDynamicHandler(String handlerName) {
         DynamicHandler handler = handlerMap.get(handlerName);
         return handler;
     }
@@ -33,11 +33,12 @@ public class HandlerManager {
             handler = SpringUtils.getBean(handlerName, DynamicHandler.class);
             handlerMap.put(handlerName, handler);
         }
-        if (handler instanceof ConfigurableBean){
-            ConfigurableBean configurableBean=(ConfigurableBean)handler;
-            if (!configurableBean.isConfigured()){
+        if (handler instanceof ConfigurableBean) {
+            ConfigurableBean configurableBean = (ConfigurableBean) handler;
+            if (!configurableBean.isConfigured()) {
                 handlerMap.remove(handlerName);
             }
+            handler = null;
         }
         return handler;
     }

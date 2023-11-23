@@ -1,4 +1,4 @@
-package org.zcx.netty.client.mqtt;
+package org.zcx.netty.depended.mqtt;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

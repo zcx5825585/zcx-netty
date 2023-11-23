@@ -1,4 +1,4 @@
-package org.zcx.netty.client.mqtt.dto;
+package org.zcx.netty.depended.mqtt.dto;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.mqtt.MqttQoS;

@@ -13,7 +13,7 @@ import io.netty.handler.codec.string.StringEncoder;
 import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zcx.netty.server.dynamicHandler.TcpHandler;
+import org.zcx.netty.handler.dynamicHandler.TcpHandler;
 
 public class NettyTcpServer {
     private static final Logger log = LoggerFactory.getLogger(NettyTcpServer.class);

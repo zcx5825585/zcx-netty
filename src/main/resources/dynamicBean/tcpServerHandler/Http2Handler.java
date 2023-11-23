@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.zcx.netty.common.AbstractDynamicHandler;
 import org.zcx.netty.common.DynamicHandler;
+import org.zcx.netty.common.HandlerManager;
 import org.zcx.netty.common.utils.RequestHelper;
 import org.zcx.netty.common.utils.SpringUtils;
 
@@ -26,7 +27,7 @@ public class Http2Handler extends AbstractDynamicHandler<FullHttpRequest> implem
         return new ChannelHandler[]{
                 new HttpServerCodec(),
                 new HttpObjectAggregator(512 * 1024),
-                SpringUtils.getBean(getHandlerName(), DynamicHandler.class)
+                HandlerManager.getDynamicHandler(getHandlerName())
         };
     }
 

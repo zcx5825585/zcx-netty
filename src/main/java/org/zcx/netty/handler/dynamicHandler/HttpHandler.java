@@ -1,4 +1,4 @@
-package org.zcx.netty.server.dynamicHandler;
+package org.zcx.netty.handler.dynamicHandler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufUtil;
@@ -12,8 +12,8 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 import org.zcx.netty.common.AbstractDynamicHandler;
 import org.zcx.netty.common.DynamicHandler;
+import org.zcx.netty.common.HandlerManager;
 import org.zcx.netty.common.utils.RequestHelper;
-import org.zcx.netty.common.utils.SpringUtils;
 
 import java.nio.charset.StandardCharsets;
 
@@ -27,7 +27,7 @@ public class HttpHandler extends AbstractDynamicHandler<FullHttpRequest> impleme
         return new ChannelHandler[]{
                 new HttpServerCodec(),
                 new HttpObjectAggregator(512 * 1024),
-                SpringUtils.getBean(getHandlerName(), DynamicHandler.class)
+                HandlerManager.getDynamicHandler(getHandlerName())
         };
     }
 
@@ -36,7 +36,7 @@ public class HttpHandler extends AbstractDynamicHandler<FullHttpRequest> impleme
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         count++;
-        log.info(getHandlerName() +"接收到http消息 " +  "\n" + request.toString());
+        log.info(getHandlerName() + "接收到http消息 " + "\n" + request.toString());
         String uri = request.uri();
         String body = getBody(request);
         RequestHelper.sendTxt(ctx, "http connect " + count);

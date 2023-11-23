@@ -1,4 +1,4 @@
-package org.zcx.netty.client.mqtt;
+package org.zcx.netty.depended.mqtt;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -221,7 +221,6 @@ public class MqttMsgBack {
             log.error("发送消息提醒：服务端连接异常~");
         }
     }
-
     private void cachePublishMsg(MqttQoS qos, ByteBuf byteBuf, MqttPublishVariableHeader variableHeader, MqttFixedHeader mqttFixedHeaderInfo, ChannelHandlerContext context, Long waitTime) {
         //缓存一份消息，规定时间内没有收到ack，用作重发，重发时将isDup设置为true,代表重复消息
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, true, qos, false, mqttFixedHeaderInfo.remainingLength());
@@ -230,6 +229,33 @@ public class MqttMsgBack {
         TimerData.scheduledFutureMap.put(variableHeader.packetId(), scheduledFuture);
     }
 
+//    public void publish(ChannelHandlerContext context, MqttPublishMessage mqttPublishMessage) {
+//        //将消息发送给订阅的客户端
+//        if (context != null && context.channel().isActive()) {
+//            //因为ByteBuf每次发送之后就会被清空了，下次发送就拿不到payload，所以提前复制一份，客户端这里不用，因为在调用此方法的时候已经调用了Unpooled.wrappedBuffer了
+//            ByteBuf payload = mqttPublishMessage.payload();
+//            payload.retainedDuplicate();
+//            context.writeAndFlush(mqttPublishMessage);
+//            MqttQoS qos = mqttPublishMessage.fixedHeader().qosLevel();
+//            if (qos == MqttQoS.AT_LEAST_ONCE || qos == MqttQoS.EXACTLY_ONCE) {
+//                MqttPublishMessage cachePubMessage = mqttPublishMessage.copy();
+//                cachePublishMsg(qos, cachePubMessage,context);
+//            }
+//        } else {
+//            log.error("发送消息提醒：服务端连接异常~");
+//        }
+//    }
+//
+//    private void cachePublishMsg(MqttQoS qos, MqttPublishMessage cachePubMessage,ChannelHandlerContext context) {
+//        //缓存一份消息，规定时间内没有收到ack，用作重发，重发时将isDup设置为true,代表重复消息
+//        MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, true, qos, false, cachePubMessage.fixedHeader().remainingLength());
+//
+//        MqttPublishVariableHeader  variableHeader= cachePubMessage.variableHeader();
+//        ByteBuf byteBuf=cachePubMessage.payload();
+//        cachePubMessage = new MqttPublishMessage(fixedHeader, variableHeader, byteBuf);
+//        ScheduledFuture<?> scheduledFuture = TimerData.scheduledThreadPoolExecutor.scheduleAtFixedRate(new MonitorMsgTime(variableHeader.packetId(), cachePubMessage, context), waitTime, waitTime, TimeUnit.MILLISECONDS);
+//        TimerData.scheduledFutureMap.put(variableHeader.packetId(), scheduledFuture);
+//    }
     /**
      * 订阅主题
      *

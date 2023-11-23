@@ -8,7 +8,6 @@ import org.zcx.netty.web.entity.HandlerInfo;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,18 +29,18 @@ public class HandlerInfoDao {
     @PostConstruct
     public void init() {
 //        this.add(new HandlerInfo(1L, "httpHandler", 1L));
-//        this.add(new HandlerInfo(2L, "tcpHandler", 1L));
+        this.add(new HandlerInfo(2L, "tcpHandler", 1L));
 //        this.add(new HandlerInfo(3L, "wsHandler", 1L));
 //        this.add(new HandlerInfo(4L, "ws2Handler", 1L));
 //        this.add(new HandlerInfo(5L, "http2Handler", 1L));
-//        this.add(new HandlerInfo(6L, "tcpClientHandler", 2L));
+        this.add(new HandlerInfo(6L, "tcpClientHandler", 2L));
         this.add(new HandlerInfo(7L, "mqttClientHandler", 2L));
         HandlerInfo configMqttClientHandler = new HandlerInfo(8L, "configMqttClientHandler", 2L);
         configMqttClientHandler.setBaseHandlerName("mqttClientHandler");
-        Map<String,Object> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         params.put("defaultTopic", "zcx/#");
-        params.put("userName","smartsite");
-        params.put("password","smartsite12347988");
+        params.put("userName", "smartsite");
+        params.put("password", "smartsite12347988");
         configMqttClientHandler.setArgs(params);
         this.add(configMqttClientHandler);
         this.currentId = 9L;
@@ -49,7 +48,7 @@ public class HandlerInfoDao {
         //初始化handler
         List<HandlerInfo> handlerInfos = list(null);
         handlerInfos.forEach(one -> {
-            one.setGroup(groupDao.getById(one.getGroupId()));
+            one.setPackageName(groupDao.getById(one.getGroupId()).getPackageName());
 
             ClassRegisterInfo classRegisterInfo = new ClassRegisterInfo();
             classRegisterInfo.setBeanName(one.getHandlerName());
@@ -95,7 +94,7 @@ public class HandlerInfoDao {
         if (handlerInfo.getId() == null) {//方便固定测试数据的ID
             handlerInfo.setId(currentId);
         }
-        handlerInfo.setGroup(groupDao.getById(handlerInfo.getGroupId()));
+        handlerInfo.setPackageName(groupDao.getById(handlerInfo.getGroupId()).getPackageName());
         map.put(handlerInfo.getId(), handlerInfo);
         currentId++;
     }

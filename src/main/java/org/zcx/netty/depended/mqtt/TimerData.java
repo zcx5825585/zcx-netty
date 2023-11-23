@@ -1,4 +1,4 @@
-package org.zcx.netty.client.mqtt;
+package org.zcx.netty.depended.mqtt;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;

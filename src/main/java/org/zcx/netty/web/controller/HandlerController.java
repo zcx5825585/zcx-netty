@@ -2,7 +2,7 @@ package org.zcx.netty.web.controller;
 
 import org.springframework.web.bind.annotation.*;
 import org.zcx.netty.common.DynamicHandler;
-import org.zcx.netty.common.abstractHandler.AbstractMqttClientHandler;
+import org.zcx.netty.handler.abstractHandler.AbstractMqttClientHandler;
 import org.zcx.netty.web.entity.HandlerInfo;
 import org.zcx.netty.web.service.HandlerService;
 
@@ -33,19 +33,18 @@ public class HandlerController {
     }
 
     @PostMapping("register")
-    public String register(Long id) throws Exception {
-        handlerService.register(id);
-        return "success";
+    public DynamicHandler register(Long id) throws Exception {
+        return handlerService.register(id);
     }
 
     @GetMapping("connect")
-    public String connect(Long handlerId,String host,Integer port) throws Exception {
+    public String connect(Long handlerId, String host, Integer port) throws Exception {
         handlerService.connect(handlerId, host, port);
         return "success";
     }
 
     @GetMapping("disconnect")
-    public String disconnect(Long handlerId,String channelId) throws Exception {
+    public String disconnect(Long handlerId, String channelId) throws Exception {
         DynamicHandler writableHandler = handlerService.getById(handlerId).getHandler();
         writableHandler.disconnect(channelId);
         return "success";

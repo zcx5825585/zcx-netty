@@ -11,6 +11,7 @@ public class HandlerInfo {
     private Long groupId;
     private Map<String, Object> args;
     private HandlerGroup group;
+    private String packageName;
     private DynamicHandler handler;
 
     public HandlerInfo() {
@@ -62,8 +63,12 @@ public class HandlerInfo {
         this.handler = handler;
     }
 
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
+
     public String getPackageName() {
-        return group.getPackageName();
+        return this.packageName;
     }
 
     public String getBaseHandlerName() {

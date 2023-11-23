@@ -1,4 +1,4 @@
-package org.zcx.netty.common.abstractHandler;
+package org.zcx.netty.handler.abstractHandler;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -10,10 +10,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.zcx.netty.common.AbstractDynamicHandler;
 import org.zcx.netty.common.DynamicHandler;
-import org.zcx.netty.common.utils.SpringUtils;
+import org.zcx.netty.common.HandlerManager;
 
 @ChannelHandler.Sharable
-public abstract class AbstractWsHandler extends AbstractDynamicHandler<TextWebSocketFrame> {
+public abstract class AbstractWsHandler extends AbstractDynamicHandler<TextWebSocketFrame> implements DynamicHandler {
     private final Log log = LogFactory.getLog(this.getClass());
 
     public abstract String getWebsocketPath();
@@ -26,7 +26,7 @@ public abstract class AbstractWsHandler extends AbstractDynamicHandler<TextWebSo
                 new HttpServerCodec(),
                 new HttpObjectAggregator(512 * 1024),
                 new WebSocketServerProtocolHandler(getWebsocketPath()),
-                SpringUtils.getBean(getHandlerName(), DynamicHandler.class)
+                HandlerManager.getDynamicHandler(getHandlerName())
         };
     }
 

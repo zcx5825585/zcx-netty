@@ -1,7 +1,7 @@
 package org.zcx.netty.web.service;
 
 import org.springframework.stereotype.Service;
-import org.zcx.netty.client.NettyClientRunner;
+import org.zcx.netty.bootstrap.NettyClientRunner;
 import org.zcx.netty.common.DynamicHandler;
 import org.zcx.netty.common.HandlerManager;
 import org.zcx.netty.common.bean.ClassRegisterInfo;
@@ -25,7 +25,7 @@ public class HandlerService {
 
     public HandlerInfo getById(Long id) {
         HandlerInfo handlerInfo = handlerDao.getById(id);
-        handlerInfo.setHandler(handlerManager.getDynamicHandler(handlerInfo.getHandlerName()));
+        handlerInfo.setHandler(HandlerManager.getDynamicHandler(handlerInfo.getHandlerName()));
         return handlerInfo;
     }
 
@@ -35,7 +35,7 @@ public class HandlerService {
         List<HandlerInfo> handlerInfos = handlerDao.list(query);
         return handlerInfos.stream().peek(one -> {
             try {
-                one.setHandler(handlerManager.getDynamicHandler(one.getHandlerName()));
+                one.setHandler(HandlerManager.getDynamicHandler(one.getHandlerName()));
             } catch (Exception e) {
                 one.setHandler(null);
             }
@@ -46,7 +46,7 @@ public class HandlerService {
         handlerDao.add(handlerInfo);
     }
 
-    public void register(Long id) {
+    public DynamicHandler register(Long id) {
         HandlerInfo handlerInfo = handlerDao.getById(id);
         ClassRegisterInfo classRegisterInfo = new ClassRegisterInfo();
         classRegisterInfo.setBeanName(handlerInfo.getHandlerName());
@@ -55,13 +55,13 @@ public class HandlerService {
         classRegisterInfo.setArgs(handlerInfo.getArgs());
         classRegisterInfo.setReCompiler(false);
         classRegisterInfo.setSpringBean(true);
-        handlerManager.registerHandler(classRegisterInfo);
+        return handlerManager.registerHandler(classRegisterInfo);
     }
 
     public void connect(Long handlerId, String host, Integer port) {
         HandlerInfo handlerInfo = getById(handlerId);
-        DynamicHandler handler=handlerInfo.getHandler();
-        if (handler==null){
+        DynamicHandler handler = handlerInfo.getHandler();
+        if (handler == null) {
             throw new HandlerException("handler未初始化");
         }
         clientRunner.runHandlerAsClient(host, port, handler);

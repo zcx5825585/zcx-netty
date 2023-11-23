@@ -10,6 +10,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 import org.zcx.netty.common.AbstractDynamicHandler;
 import org.zcx.netty.common.DynamicHandler;
+import org.zcx.netty.common.HandlerManager;
 import org.zcx.netty.common.utils.SpringUtils;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ public class TcpClientHandler extends AbstractDynamicHandler<String> implements 
         return new ChannelHandler[]{
                 new StringEncoder(CharsetUtil.UTF_8),
                 new StringDecoder(CharsetUtil.UTF_8),
-                SpringUtils.getBean(getHandlerName(), DynamicHandler.class)
+                HandlerManager.getDynamicHandler(getHandlerName())
         };
     }
 

@@ -1,4 +1,4 @@
-package org.zcx.netty.server.dynamicHandler;
+package org.zcx.netty.handler.configurableHandler;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -6,9 +6,10 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
+import org.zcx.netty.common.DynamicHandler;
+import org.zcx.netty.handler.abstractHandler.AbstractWsHandler;
 import org.zcx.netty.common.bean.BeanParam;
 import org.zcx.netty.common.bean.ConfigurableBean;
-import org.zcx.netty.common.abstractHandler.AbstractWsHandler;
 
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.Map;
 
 @Component("wsHandler")
 @ChannelHandler.Sharable
-public class WsHandler extends AbstractWsHandler implements ConfigurableBean {
+public class WsHandler extends AbstractWsHandler implements ConfigurableBean, DynamicHandler {
     private final Log log = LogFactory.getLog(this.getClass());
 
     private String beanName = "wsHandler";

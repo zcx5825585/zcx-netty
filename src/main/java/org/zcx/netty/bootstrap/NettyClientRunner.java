@@ -1,4 +1,4 @@
-package org.zcx.netty.client;
+package org.zcx.netty.bootstrap;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelInitializer;

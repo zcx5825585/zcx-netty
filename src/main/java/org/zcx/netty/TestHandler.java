@@ -10,7 +10,7 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
-import org.zcx.netty.server.dynamicHandler.HttpHandler;
+import org.zcx.netty.handler.dynamicHandler.HttpHandler;
 
 import javax.annotation.Resource;
 

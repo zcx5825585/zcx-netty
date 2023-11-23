@@ -1,4 +1,4 @@
-package org.zcx.netty.server.dynamicHandler;
+package org.zcx.netty.handler.dynamicHandler;
 
 
 import io.netty.channel.ChannelHandler;
@@ -12,7 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 import org.zcx.netty.common.AbstractDynamicHandler;
 import org.zcx.netty.common.DynamicHandler;
-import org.zcx.netty.common.utils.SpringUtils;
+import org.zcx.netty.common.HandlerManager;
 
 @Component("tcpHandler")
 @ChannelHandler.Sharable
@@ -24,7 +24,7 @@ public class TcpHandler extends AbstractDynamicHandler<String> implements Dynami
         return new ChannelHandler[]{
                 new StringEncoder(CharsetUtil.UTF_8),
                 new StringDecoder(CharsetUtil.UTF_8),
-                SpringUtils.getBean(getHandlerName(), DynamicHandler.class)
+                HandlerManager.getDynamicHandler(getHandlerName())
         };
     }
 
@@ -65,21 +65,21 @@ public class TcpHandler extends AbstractDynamicHandler<String> implements Dynami
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        if (flag) {
-            flag = false;
-            new Thread(() -> {
-                while (true) {
-                    try {
-                        Thread.sleep(5 * 1000L);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    for (ChannelHandlerContext one : channelMap.values()) {
-                        one.channel().writeAndFlush("test");
-                    }
-                }
-            }).start();
-        }
+//        if (flag) {
+//            flag = false;
+//            new Thread(() -> {
+//                while (true) {
+//                    try {
+//                        Thread.sleep(5 * 1000L);
+//                    } catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
+//                    for (ChannelHandlerContext one : channelMap.values()) {
+//                        one.channel().writeAndFlush("test");
+//                    }
+//                }
+//            }).start();
+//        }
     }
 
 }
