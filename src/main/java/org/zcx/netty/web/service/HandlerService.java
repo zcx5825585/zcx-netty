@@ -10,9 +10,12 @@ import org.zcx.netty.common.exception.HandlerException;
 import org.zcx.netty.web.dao.HandlerInfoDao;
 import org.zcx.netty.web.entity.HandlerInfo;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.net.BindException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,6 +29,33 @@ public class HandlerService {
     @Resource
     private HandlerInfoDao handlerDao;
 
+    @PostConstruct
+    public void init() {
+        add(new HandlerInfo(1L, "httpHandler", 1L));
+        add(new HandlerInfo(2L, "tcpHandler", 1L));
+//        add(new HandlerInfo(3L, "wsHandler", 1L));
+//        add(new HandlerInfo(4L, "ws2Handler", 1L));
+//        add(new HandlerInfo(5L, "http2Handler", 1L));
+        add(new HandlerInfo(6L, "tcpClientHandler", 2L));
+        add(new HandlerInfo(7L, "mqttClientHandler", 2L));
+        HandlerInfo configMqttClientHandler = new HandlerInfo(8L, "configMqttClientHandler", 2L);
+        configMqttClientHandler.setBaseHandlerName("mqttClientHandler");
+        Map<String, Object> params = new HashMap<>();
+        params.put("defaultTopic", "zcx/#");
+        params.put("userName", "smartsite");
+        params.put("password", "smartsite12347988");
+        configMqttClientHandler.setArgs(params);
+        add(configMqttClientHandler);
+
+        handlerDao.setCurrentId(9L);
+
+        //初始化handler
+        List<HandlerInfo> handlerInfos = handlerDao.list(null);
+        handlerInfos.stream().filter(HandlerInfo::getAutoRegister).forEach(one -> {
+            register(one.getId());
+        });
+
+    }
 
     public HandlerInfo getById(Long id) {
         HandlerInfo handlerInfo = handlerDao.getById(id);

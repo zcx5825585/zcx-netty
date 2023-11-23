@@ -3,10 +3,8 @@ package org.zcx.netty.web.dao;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 import org.zcx.netty.common.HandlerManager;
-import org.zcx.netty.common.bean.ClassRegisterInfo;
 import org.zcx.netty.web.entity.HandlerInfo;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.List;
@@ -23,44 +21,13 @@ public class HandlerInfoDao {
 
     private Long currentId = 1L;
 
+    public void setCurrentId(long id) {
+        this.currentId = id;
+    }
+
 
     private Map<Long, HandlerInfo> map = new HashMap<>();
 
-    @PostConstruct
-    public void init() {
-        this.add(new HandlerInfo(1L, "httpHandler", 1L));
-        this.add(new HandlerInfo(2L, "tcpHandler", 1L));
-//        this.add(new HandlerInfo(3L, "wsHandler", 1L));
-//        this.add(new HandlerInfo(4L, "ws2Handler", 1L));
-//        this.add(new HandlerInfo(5L, "http2Handler", 1L));
-        this.add(new HandlerInfo(6L, "tcpClientHandler", 2L));
-        this.add(new HandlerInfo(7L, "mqttClientHandler", 2L));
-        HandlerInfo configMqttClientHandler = new HandlerInfo(8L, "configMqttClientHandler", 2L);
-        configMqttClientHandler.setBaseHandlerName("mqttClientHandler");
-        Map<String, Object> params = new HashMap<>();
-        params.put("defaultTopic", "zcx/#");
-        params.put("userName", "smartsite");
-        params.put("password", "smartsite12347988");
-        configMqttClientHandler.setArgs(params);
-        this.add(configMqttClientHandler);
-        this.currentId = 9L;
-
-        //初始化handler
-        List<HandlerInfo> handlerInfos = list(null);
-        handlerInfos.forEach(one -> {
-            one.setPackageName(groupDao.getById(one.getGroupId()).getPackageName());
-
-            ClassRegisterInfo classRegisterInfo = new ClassRegisterInfo();
-            classRegisterInfo.setBeanName(one.getHandlerName());
-            classRegisterInfo.setBaseBeanName(one.getBaseHandlerName());
-            classRegisterInfo.setPackageName(one.getPackageName());
-            classRegisterInfo.setArgs(one.getArgs());
-            classRegisterInfo.setReCompiler(false);
-            classRegisterInfo.setSpringBean(true);
-            handlerManager.registerHandler(classRegisterInfo);
-        });
-
-    }
 
     public List<HandlerInfo> list(HandlerInfo query) {
         return map.values().stream().filter(one -> {
