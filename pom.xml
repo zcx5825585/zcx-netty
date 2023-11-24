@@ -29,6 +29,12 @@
             <artifactId>netty-all</artifactId>
             <version>4.1.67.Final</version>
         </dependency>
+        <!-- lua-->
+        <dependency>
+            <groupId>org.luaj</groupId>
+            <artifactId>luaj-jse</artifactId>
+            <version>3.0.1</version>
+        </dependency>
     </dependencies>
 
     <properties>
