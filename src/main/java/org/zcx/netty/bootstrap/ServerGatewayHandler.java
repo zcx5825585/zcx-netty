@@ -39,10 +39,17 @@ public class ServerGatewayHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        //接收到心跳包 服务升级
-        HandlerInfo handlerInfo = handlerDao.getBySn("tcpHandler");
-        DynamicHandler dynamicHandler = handlerManager.getDynamicHandler(handlerInfo.getHandlerName());
-        ctx.pipeline().addLast(dynamicHandler.initHandlers());
+        //接收到出示信息 获取绑定的handler 服务升级
+        if (msg != null){//todo 绑定信息获取 多条件匹配
+            //todo 获取相应handler
+            HandlerInfo handlerInfo = handlerDao.getBySn("tcpHandler");
+            DynamicHandler dynamicHandler = handlerManager.getDynamicHandler(handlerInfo.getHandlerName());
+            log.info("服务升级:" + ctx.channel().id());
+            ctx.pipeline().addLast(dynamicHandler.initHandlers());
+            ctx.pipeline().remove(ServerGatewayHandler.class);//移除网关
+            ctx.fireChannelActive();//调用连接建立钩子
+            ctx.fireChannelRead(msg);//继续处理本条消息
+        }
     }
 
     private int count = 0;

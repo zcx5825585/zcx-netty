@@ -20,13 +20,13 @@ public class HandlerGroupDao {
         HandlerGroup tcpServerGroup = new HandlerGroup();
         tcpServerGroup.setGroupId(1L);
         tcpServerGroup.setGroupName("tcpServerGroup");
-        tcpServerGroup.setPackageName("tcpServerHandler");
+        tcpServerGroup.setPackageName("dynamicBean.tcpServerHandler");
         this.add(tcpServerGroup);
 
         HandlerGroup tcpClientGroup = new HandlerGroup();
         tcpClientGroup.setGroupId(2L);
         tcpClientGroup.setGroupName("tcpClientGroup");
-        tcpClientGroup.setPackageName("tcpClientHandler");
+        tcpClientGroup.setPackageName("dynamicBean.tcpClientHandler");
         this.add(tcpClientGroup);
         this.currentId = 3L;
     }

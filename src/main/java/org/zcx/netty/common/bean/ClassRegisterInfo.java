@@ -1,19 +1,38 @@
 package org.zcx.netty.common.bean;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 public class ClassRegisterInfo {
+    private String loaderType;
     private String packageName;
     private String beanName;
     private String baseBeanName;
     private Map<String, Object> args;
     private boolean reCompiler = false;
     private boolean springBean = true;
+    private String javaSrc;
     private List<ClassRegisterInfo> dependClass = Collections.emptyList();
 
+    public String getLoaderType() {
+        return loaderType;
+    }
+
+    public void setLoaderType(String loaderType) {
+        this.loaderType = loaderType;
+    }
+
+    public String getJavaSrc() {
+        return javaSrc;
+    }
+
+    public void setJavaSrc(String javaSrc) {
+        this.javaSrc = javaSrc;
+    }
 
     public String getBeanName() {
         return beanName;
@@ -36,6 +55,10 @@ public class ClassRegisterInfo {
 
     public String getClassName() {
         return getBaseBeanName().substring(0, 1).toUpperCase(Locale.ROOT) + getBaseBeanName().substring(1);
+    }
+
+    public String getDirPath(){
+        return getPackageName().replaceAll("\\.", Matcher.quoteReplacement(File.separator)) + File.separator;
     }
 
     public boolean isReCompiler() {
@@ -77,4 +100,5 @@ public class ClassRegisterInfo {
     public void setArgs(Map<String, Object> args) {
         this.args = args;
     }
+
 }

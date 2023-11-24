@@ -5,17 +5,17 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zcx.netty.depended.mqtt.MqttMsgBack;
-import org.zcx.netty.depended.mqtt.dto.MyMqttMessage;
 import org.zcx.netty.common.AbstractDynamicHandler;
 import org.zcx.netty.common.DynamicHandler;
 import org.zcx.netty.common.HandlerManager;
+import org.zcx.netty.depended.mqtt.MqttMsgBack;
+import org.zcx.netty.depended.mqtt.dto.MyMqttMessage;
 
 import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<MqttMessage> implements DynamicHandler{
+public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<MqttMessage> implements DynamicHandler {
     private final Logger log = LoggerFactory.getLogger(AbstractMqttClientHandler.class);
 
     protected Set<String> topicMap = new HashSet<>();
@@ -62,7 +62,7 @@ public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<M
 
 
     public void subscribe(String channelId, String topic) {
-        if (topicMap.add(topic)) {
+        if (topic != null && topic.length() > 0 && topicMap.add(topic)) {
             mqttMsgBack.subscribe(getChannel(channelId), topic, MqttQoS.AT_MOST_ONCE);
         }
     }

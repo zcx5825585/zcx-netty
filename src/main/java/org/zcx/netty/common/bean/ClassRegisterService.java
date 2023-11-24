@@ -7,24 +7,19 @@ import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.stereotype.Component;
 import org.zcx.netty.common.exception.BeanException;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
+import javax.annotation.Resource;
+import java.util.Map;
 
 @Component
 public class ClassRegisterService implements ApplicationContextAware {
 
-    private static ApplicationContext applicationContext;
-    private static GenericApplicationContext genericApplicationContext;
-    public static String rootPath = "E:\\IdeaProjects\\zcx\\netty\\src\\main\\resources\\";
-    public static String dynamicPath = "dynamicBean";
+    @Resource
+    private Map<String, MyClassLoader> classLoaderMap;
 
+    private static GenericApplicationContext genericApplicationContext;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
         this.genericApplicationContext = (GenericApplicationContext) applicationContext;
     }
 
@@ -67,6 +62,13 @@ public class ClassRegisterService implements ApplicationContextAware {
                 registerBean(dependClass);
             }
         }
+        //加载class
+        //加载依赖
+        for (ClassRegisterInfo dependClass : registerInfo.getDependClass()) {
+            if (!dependClass.isSpringBean()) {
+                loadClass(dependClass);
+            }
+        }
         Class clazz = loadClass(registerInfo);
         //注册bean
         genericApplicationContext.registerBean(beanName, clazz);
@@ -74,57 +76,10 @@ public class ClassRegisterService implements ApplicationContextAware {
     }
 
     public Class loadClass(ClassRegisterInfo registerInfo) {
-        for (ClassRegisterInfo dependClass : registerInfo.getDependClass()) {
-            if (!dependClass.isSpringBean()) {
-                loadClass(dependClass);
-            }
-        }
-        compilerJava(registerInfo);
-        try {
-            //1、首先构建文件的目录url地址，
-            URL[] urls = new URL[]{new URL("file:/" + rootPath)};
-            //2、使用URLClassLoader对象的loadClass方法加载对应类
-            URLClassLoader loader = new URLClassLoader(urls);
-            //3、获取所加载类的方法
-            Class clazz = loader.loadClass(dynamicPath + "." + registerInfo.getPackageName() + "." + registerInfo.getClassName());
-            return clazz;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BeanException("载入class失败");
-        }
-    }
+        MyClassLoader classLoader = classLoaderMap.get(registerInfo.getLoaderType());
 
-    public boolean compilerJava(ClassRegisterInfo registerInfo) {
-        String classPath = rootPath + dynamicPath + File.separator + registerInfo.getPackageName() + File.separator + registerInfo.getClassName() + ".class"; //class路径
-        File classFile = new File(classPath);
-        if (classFile.exists()) {
-            if (registerInfo.isReCompiler()) {
-                classFile.delete();
-                String dirPath = rootPath + dynamicPath + File.separator + registerInfo.getPackageName() + File.separator;
-                File dir = new File(dirPath);
-                if (dir.isDirectory()) {
-                    for (File file : dir.listFiles()) {
-                        if (file.getName().startsWith(registerInfo.getClassName()) && file.getName().endsWith(".class")) {
-                            file.delete();
-                        }
-                    }
-                }
-            } else {
-                return true;
-            }
-        }
-        String javaPath = rootPath + dynamicPath + File.separator + registerInfo.getPackageName() + File.separator + registerInfo.getClassName() + ".java"; //路径
-        File javaFile = new File(javaPath);
-        if (!javaFile.exists()) {
-            throw new BeanException("编译class失败：java文件未找到");
-        }
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler(); //调用动态编译的工具
-        //进行动态编译，并返回结果
-        int result = compiler.run(null, null, null, javaPath);
-        if (result != 0) {
-            throw new BeanException("编译class失败：编译失败");
-        }
-        return result == 0;
+        Class clazz = classLoader.loadClass(registerInfo);
+        return clazz;
     }
 
 }

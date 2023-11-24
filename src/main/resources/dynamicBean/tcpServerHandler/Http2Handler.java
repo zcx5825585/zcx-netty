@@ -12,13 +12,17 @@ import org.apache.commons.logging.LogFactory;
 import org.zcx.netty.common.AbstractDynamicHandler;
 import org.zcx.netty.common.DynamicHandler;
 import org.zcx.netty.common.HandlerManager;
+import org.zcx.netty.common.bean.TestBean;
 import org.zcx.netty.common.utils.RequestHelper;
-import org.zcx.netty.common.utils.SpringUtils;
 
+import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 
 @ChannelHandler.Sharable
 public class Http2Handler extends AbstractDynamicHandler<FullHttpRequest> implements DynamicHandler {
+
+    @Resource
+    private TestBean testBean;
 
     private final Log log = LogFactory.getLog(this.getClass());
 
@@ -36,6 +40,7 @@ public class Http2Handler extends AbstractDynamicHandler<FullHttpRequest> implem
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         count++;
+        testBean.test();
         String uri = request.uri();
         String method = request.method().name();
         String body = getBody(request);

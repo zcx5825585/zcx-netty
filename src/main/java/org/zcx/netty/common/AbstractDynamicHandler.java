@@ -23,7 +23,6 @@ public abstract class AbstractDynamicHandler<I> extends SimpleChannelInboundHand
     public void channelInactive0(ChannelHandlerContext ctx) throws Exception {
     }
 
-
     protected ChannelHandlerContext getChannel(String channelId) {
         return channelMap.get(channelId);
     }

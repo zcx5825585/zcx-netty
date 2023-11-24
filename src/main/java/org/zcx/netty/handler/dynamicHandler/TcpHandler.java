@@ -63,8 +63,8 @@ public class TcpHandler extends AbstractDynamicHandler<String> implements Dynami
      * 建立连接时，返回消息
      */
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
+    public void channelActive0(ChannelHandlerContext ctx) throws Exception {
+        log.info(String.format("%s[%s]建立连接\n", getHandlerName(), ctx.channel().id().asShortText()));
 //        if (flag) {
 //            flag = false;
 //            new Thread(() -> {

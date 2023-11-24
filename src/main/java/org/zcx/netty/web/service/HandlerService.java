@@ -35,9 +35,10 @@ public class HandlerService {
         add(new HandlerInfo(2L, "tcpHandler", 1L));
 //        add(new HandlerInfo(3L, "wsHandler", 1L));
 //        add(new HandlerInfo(4L, "ws2Handler", 1L));
-//        add(new HandlerInfo(5L, "http2Handler", 1L));
-        add(new HandlerInfo(6L, "tcpClientHandler", 2L));
-        add(new HandlerInfo(7L, "mqttClientHandler", 2L));
+        add(new HandlerInfo(5L, "http2Handler", 1L));
+//        add(new HandlerInfo(6L, "tcpClientHandler", 2L));
+//        add(new HandlerInfo(7L, "mqttClientHandler", 2L));
+        //参数方式创建
         HandlerInfo configMqttClientHandler = new HandlerInfo(8L, "configMqttClientHandler", 2L);
         configMqttClientHandler.setBaseHandlerName("mqttClientHandler");
         Map<String, Object> params = new HashMap<>();
@@ -47,7 +48,70 @@ public class HandlerService {
         configMqttClientHandler.setArgs(params);
         add(configMqttClientHandler);
 
-        handlerDao.setCurrentId(9L);
+        //java字符串创建
+        HandlerInfo http3Handler = new HandlerInfo(9L, "http3Handler", 1L);
+        http3Handler.setLoaderType("scriptMemoryLoader");
+        http3Handler.setJavaSrc("package dynamicBean.tcpServerHandler;\n" +
+                "\n" +
+                "import io.netty.buffer.ByteBuf;\n" +
+                "import io.netty.buffer.ByteBufUtil;\n" +
+                "import io.netty.channel.ChannelHandler;\n" +
+                "import io.netty.channel.ChannelHandlerContext;\n" +
+                "import io.netty.handler.codec.http.FullHttpRequest;\n" +
+                "import io.netty.handler.codec.http.HttpObjectAggregator;\n" +
+                "import io.netty.handler.codec.http.HttpServerCodec;\n" +
+                "import org.apache.commons.logging.Log;\n" +
+                "import org.apache.commons.logging.LogFactory;\n" +
+                "import org.zcx.netty.common.AbstractDynamicHandler;\n" +
+                "import org.zcx.netty.common.DynamicHandler;\n" +
+                "import org.zcx.netty.common.HandlerManager;\n" +
+                "import org.zcx.netty.common.bean.TestBean;\n" +
+                "import org.zcx.netty.common.utils.RequestHelper;\n" +
+                "\n" +
+                "import javax.annotation.Resource;\n" +
+                "import java.nio.charset.StandardCharsets;\n" +
+                "\n" +
+                "@ChannelHandler.Sharable\n" +
+                "public class Http3Handler extends AbstractDynamicHandler<FullHttpRequest> implements DynamicHandler {\n" +
+                "\n" +
+                "    @Resource\n" +
+                "    private TestBean testBean;\n" +
+                "\n" +
+                "    private final Log log = LogFactory.getLog(this.getClass());\n" +
+                "\n" +
+                "    @Override\n" +
+                "    public ChannelHandler[] initHandlers() {\n" +
+                "        return new ChannelHandler[]{\n" +
+                "                new HttpServerCodec(),\n" +
+                "                new HttpObjectAggregator(512 * 1024),\n" +
+                "                HandlerManager.getDynamicHandler(getHandlerName())\n" +
+                "        };\n" +
+                "    }\n" +
+                "\n" +
+                "    private int count = 0;\n" +
+                "\n" +
+                "    @Override\n" +
+                "    protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {\n" +
+                "        count++;\n" +
+                "        testBean.test();\n" +
+                "        String uri = request.uri();\n" +
+                "        String method = request.method().name();\n" +
+                "        String body = getBody(request);\n" +
+                "        log.info(\"接收到http消息 \\nhandler：\" + getHandlerName() + \"\\n\" + request.toString());\n" +
+                "        RequestHelper.sendTxt(ctx, \"http3 connect \" + count);\n" +
+                "    }\n" +
+                "\n" +
+                "    public static String getBody(FullHttpRequest request) {\n" +
+                "        ByteBuf buf = request.content();\n" +
+                "        byte[] bytes = ByteBufUtil.getBytes(buf);\n" +
+                "        return new String(bytes, StandardCharsets.UTF_8);\n" +
+                "    }\n" +
+                "\n" +
+                "}\n");
+        add(http3Handler);
+
+
+        handlerDao.setCurrentId(10L);
 
         //初始化handler
         List<HandlerInfo> handlerInfos = handlerDao.list(null);
@@ -84,8 +148,10 @@ public class HandlerService {
         HandlerInfo handlerInfo = handlerDao.getById(id);
         ClassRegisterInfo classRegisterInfo = new ClassRegisterInfo();
         classRegisterInfo.setBeanName(handlerInfo.getHandlerName());
-        classRegisterInfo.setBaseBeanName(handlerInfo.getBaseHandlerName());
         classRegisterInfo.setPackageName(handlerInfo.getPackageName());
+        classRegisterInfo.setLoaderType(handlerInfo.getLoaderType());
+        classRegisterInfo.setJavaSrc(handlerInfo.getJavaSrc());
+        classRegisterInfo.setBaseBeanName(handlerInfo.getBaseHandlerName());
         classRegisterInfo.setArgs(handlerInfo.getArgs());
         classRegisterInfo.setReCompiler(false);
         classRegisterInfo.setSpringBean(true);

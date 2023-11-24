@@ -6,15 +6,18 @@ import java.util.Map;
 
 public class HandlerInfo {
     private Long id;
+    private String loaderType ="fileLoader";
+    private String javaSrc;
     private String handlerName;
     private String baseHandlerName;
     private Long groupId;
-    private Map<String, Object> args;
-    private HandlerGroup group;
+    private Long classId;
+    private String version;
     private String packageName;
-    private DynamicHandler handler;
     private Boolean autoRegister = true;
     private Boolean isRunning = false;
+    private Map<String, Object> args;
+    private DynamicHandler handler;
 
     public HandlerInfo() {
     }
@@ -23,6 +26,38 @@ public class HandlerInfo {
         this.id = id;
         this.handlerName = handlerName;
         this.groupId = groupId;
+    }
+
+    public String getLoaderType() {
+        return loaderType;
+    }
+
+    public void setLoaderType(String loaderType) {
+        this.loaderType = loaderType;
+    }
+
+    public String getJavaSrc() {
+        return javaSrc;
+    }
+
+    public void setJavaSrc(String javaSrc) {
+        this.javaSrc = javaSrc;
+    }
+
+    public Long getClassId() {
+        return classId;
+    }
+
+    public void setClassId(Long classId) {
+        this.classId = classId;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public Long getId() {
@@ -47,14 +82,6 @@ public class HandlerInfo {
 
     public void setGroupId(Long groupId) {
         this.groupId = groupId;
-    }
-
-    public HandlerGroup getGroup() {
-        return group;
-    }
-
-    public void setGroup(HandlerGroup group) {
-        this.group = group;
     }
 
     public DynamicHandler getHandler() {
