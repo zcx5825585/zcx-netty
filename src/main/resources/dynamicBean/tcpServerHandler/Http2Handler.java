@@ -9,10 +9,10 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.zcx.netty.common.AbstractDynamicHandler;
-import org.zcx.netty.common.DynamicHandler;
-import org.zcx.netty.common.HandlerManager;
-import org.zcx.netty.common.bean.TestBean;
+import org.zcx.netty.handler.AbstractDynamicHandler;
+import org.zcx.netty.handler.DynamicHandler;
+import org.zcx.netty.handler.HandlerManager;
+import org.zcx.netty.bean.TestBean;
 import org.zcx.netty.common.utils.RequestHelper;
 
 import javax.annotation.Resource;

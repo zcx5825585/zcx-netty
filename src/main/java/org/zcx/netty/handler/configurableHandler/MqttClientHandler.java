@@ -10,11 +10,11 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.zcx.netty.common.DynamicHandler;
-import org.zcx.netty.depended.mqtt.dto.MyMqttMessage;
+import org.zcx.netty.handler.DynamicHandler;
+import org.zcx.netty.mqtt.dto.MyMqttMessage;
 import org.zcx.netty.handler.abstractHandler.AbstractMqttClientHandler;
-import org.zcx.netty.common.bean.BeanParam;
-import org.zcx.netty.common.bean.ConfigurableBean;
+import org.zcx.netty.bean.BeanParam;
+import org.zcx.netty.bean.ConfigurableBean;
 
 import java.util.Arrays;
 import java.util.List;

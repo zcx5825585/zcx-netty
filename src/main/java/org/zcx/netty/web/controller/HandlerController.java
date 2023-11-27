@@ -1,7 +1,7 @@
 package org.zcx.netty.web.controller;
 
 import org.springframework.web.bind.annotation.*;
-import org.zcx.netty.common.DynamicHandler;
+import org.zcx.netty.handler.DynamicHandler;
 import org.zcx.netty.handler.abstractHandler.AbstractMqttClientHandler;
 import org.zcx.netty.web.entity.HandlerInfo;
 import org.zcx.netty.web.service.HandlerService;

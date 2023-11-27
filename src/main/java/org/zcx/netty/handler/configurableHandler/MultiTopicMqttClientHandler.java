@@ -10,14 +10,14 @@ import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import org.zcx.netty.common.DynamicHandler;
-import org.zcx.netty.common.bean.BeanParam;
-import org.zcx.netty.common.bean.ConfigurableBean;
+import org.zcx.netty.handler.DynamicHandler;
+import org.zcx.netty.bean.BeanParam;
+import org.zcx.netty.bean.ConfigurableBean;
 import org.zcx.netty.common.exception.HandlerException;
 import org.zcx.netty.common.utils.SpringUtils;
-import org.zcx.netty.depended.mqtt.MqttTopicHandler;
-import org.zcx.netty.depended.mqtt.TopicUtil;
-import org.zcx.netty.depended.mqtt.dto.MyMqttMessage;
+import org.zcx.netty.mqtt.MqttTopicHandler;
+import org.zcx.netty.mqtt.TopicUtil;
+import org.zcx.netty.mqtt.dto.MyMqttMessage;
 import org.zcx.netty.handler.abstractHandler.AbstractMqttClientHandler;
 
 import java.util.Arrays;
@@ -61,12 +61,10 @@ public class MultiTopicMqttClientHandler extends AbstractMqttClientHandler imple
     }
 
     public void sendMsg1(String topicName, String msg) {
-        TopicUtil.validateTopicName(topicName);
         sendMsg0(getChannelId(), topicName, msg);
     }
 
     public void subscribe0(String topicName, String topicHandlerName) {
-        TopicUtil.validateTopicName(topicName);
         MqttTopicHandler topicHandler = SpringUtils.getBean(topicHandlerName, MqttTopicHandler.class);
         if (topicHandler == null){
             throw new HandlerException("mqtt消息处理类不存在");

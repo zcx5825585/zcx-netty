@@ -8,9 +8,9 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.zcx.netty.common.AbstractDynamicHandler;
-import org.zcx.netty.common.DynamicHandler;
-import org.zcx.netty.common.HandlerManager;
+import org.zcx.netty.handler.AbstractDynamicHandler;
+import org.zcx.netty.handler.DynamicHandler;
+import org.zcx.netty.handler.HandlerManager;
 
 @ChannelHandler.Sharable
 public abstract class AbstractWsHandler extends AbstractDynamicHandler<TextWebSocketFrame> implements DynamicHandler {

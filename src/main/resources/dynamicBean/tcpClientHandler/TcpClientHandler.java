@@ -8,11 +8,10 @@ import io.netty.util.CharsetUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
-import org.zcx.netty.common.AbstractDynamicHandler;
-import org.zcx.netty.common.ClientHandler;
-import org.zcx.netty.common.DynamicHandler;
-import org.zcx.netty.common.HandlerManager;
-import org.zcx.netty.common.utils.SpringUtils;
+import org.zcx.netty.handler.AbstractDynamicHandler;
+import org.zcx.netty.handler.ClientHandler;
+import org.zcx.netty.handler.DynamicHandler;
+import org.zcx.netty.handler.HandlerManager;
 
 import java.io.IOException;
 

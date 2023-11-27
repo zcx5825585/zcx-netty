@@ -1,35 +1,34 @@
-package org.zcx.netty.handler.abstractHandler;
+package org.zcx.netty.mqtt;
 
-import io.netty.channel.ChannelHandler;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.mqtt.*;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.mqtt.MqttFixedHeader;
+import io.netty.handler.codec.mqtt.MqttMessage;
+import io.netty.handler.codec.mqtt.MqttQoS;
+import io.netty.util.CharsetUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.zcx.netty.handler.AbstractDynamicHandler;
-import org.zcx.netty.handler.ClientHandler;
-import org.zcx.netty.handler.DynamicHandler;
-import org.zcx.netty.handler.HandlerManager;
-import org.zcx.netty.common.exception.HandlerException;
-import org.zcx.netty.mqtt.MqttMsgBack;
-import org.zcx.netty.mqtt.TopicUtil;
 import org.zcx.netty.mqtt.dto.MyMqttMessage;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<MqttMessage> implements DynamicHandler, ClientHandler {
-    private final Logger log = LoggerFactory.getLogger(AbstractMqttClientHandler.class);
+public abstract class AbstractMqttHandler extends SimpleChannelInboundHandler<MqttMessage> {
+    private final Logger log = LoggerFactory.getLogger(AbstractMqttHandler.class);
 
+    protected Map<String, ChannelHandlerContext> channelMap = new HashMap<>();
     protected Set<String> topicMap = new HashSet<>();
 
     @Resource
     protected MqttMsgBack mqttMsgBack;
 
-    @Override
     public abstract String getHost();
 
-    @Override
     public abstract Integer getPort();
 
     public abstract String getUserName();
@@ -40,42 +39,37 @@ public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<M
 
     public abstract void channelRead1(ChannelHandlerContext ctx, MqttMessage mqttMessage);
 
-    public abstract void sendMsg0(String channelId, String topicName, String msg);
-
-
-    @Override
-    public ChannelHandler[] initHandlers() {
-        DynamicHandler handler = HandlerManager.getDynamicHandler(getHandlerName());
-        if (handler==null){
-            throw new HandlerException(getHandlerName() + "未注册");
-        }
-        return new ChannelHandler[]{
-                new MqttDecoder(1024 * 8),
-                MqttEncoder.INSTANCE,
-                handler
-        };
+    public void sendMsg(String channelId, String topicName, String msg) {
+        TopicUtil.validateTopicName(topicName);
+        ByteBuf byteBuf = Unpooled.copiedBuffer(msg, CharsetUtil.UTF_8);
+        MyMqttMessage mqttMessage = new MyMqttMessage();
+        mqttMessage.setTopic(topicName);
+        mqttMessage.setPayload(byteBuf);
+        sendMsg(channelId, mqttMessage);
     }
 
-
-    @Override
     public void sendMsg(String channelId, Object msg) {
         MyMqttMessage mqttMsg = (MyMqttMessage) msg;
         TopicUtil.validateTopicName(mqttMsg.getTopic());
         mqttMsgBack.publish(getChannel(channelId), mqttMsg.getTopic(), mqttMsg.getPayload(), mqttMsg.getQos(), mqttMsg.isRetain(), mqttMsg.getWaitTime());
     }
 
+    protected ChannelHandlerContext getChannel(String channelId) {
+        return channelMap.get(channelId);
+    }
 
     /**
      * 连接成功
      */
     @Override
-    public void channelActive0(ChannelHandlerContext ctx) {
+    public void channelActive(ChannelHandlerContext ctx) {
+        String channelId = ctx.channel().id().asShortText();
+        channelMap.put(channelId, ctx);
         mqttMsgBack.connect(ctx, getUserName(), getPassword());
     }
 
 
     public void subscribe(String channelId, String topic) {
-        TopicUtil.validateTopicName(topic);
         if (topic != null && topic.length() > 0 && topicMap.add(topic)) {
             mqttMsgBack.subscribe(getChannel(channelId), topic, MqttQoS.AT_MOST_ONCE);
         }

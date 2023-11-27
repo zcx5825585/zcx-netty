@@ -6,10 +6,10 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
-import org.zcx.netty.common.DynamicHandler;
+import org.zcx.netty.handler.DynamicHandler;
 import org.zcx.netty.handler.abstractHandler.AbstractWsHandler;
-import org.zcx.netty.common.bean.BeanParam;
-import org.zcx.netty.common.bean.ConfigurableBean;
+import org.zcx.netty.bean.BeanParam;
+import org.zcx.netty.bean.ConfigurableBean;
 
 import java.util.Arrays;
 import java.util.List;

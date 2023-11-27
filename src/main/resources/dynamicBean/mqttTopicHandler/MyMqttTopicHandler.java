@@ -1,11 +1,7 @@
 package dynamicBean.mqttTopicHandler;
 
 import org.springframework.stereotype.Component;
-import org.zcx.netty.common.bean.ClassRegisterInfo;
-import org.zcx.netty.depended.mqtt.MqttTopicHandler;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
+import org.zcx.netty.mqtt.MqttTopicHandler;
 
 @Component("myMqttTopicHandler")
 public class MyMqttTopicHandler implements MqttTopicHandler {

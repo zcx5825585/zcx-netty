@@ -1,12 +1,12 @@
 package org.zcx.netty.web.service;
 
 import org.springframework.stereotype.Service;
-import org.zcx.netty.bootstrap.NettyTcpClientRunner;
-import org.zcx.netty.bootstrap.NettyTcpServer;
-import org.zcx.netty.common.DynamicHandler;
-import org.zcx.netty.common.HandlerManager;
-import org.zcx.netty.common.bean.ClassRegisterInfo;
+import org.zcx.netty.handler.DynamicHandler;
+import org.zcx.netty.handler.HandlerManager;
+import org.zcx.netty.bean.ClassRegisterInfo;
 import org.zcx.netty.common.exception.HandlerException;
+import org.zcx.netty.handler.bootstrap.NettyTcpClientRunner;
+import org.zcx.netty.handler.bootstrap.NettyTcpServerRunner;
 import org.zcx.netty.web.dao.HandlerInfoDao;
 import org.zcx.netty.web.entity.HandlerInfo;
 
@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Service
 public class HandlerService {
     @Resource
-    private NettyTcpServer serverRunner;
+    private NettyTcpServerRunner serverRunner;
     @Resource
     private NettyTcpClientRunner clientRunner;
     @Resource
@@ -65,10 +65,10 @@ public class HandlerService {
                 "import io.netty.handler.codec.http.HttpServerCodec;\n" +
                 "import org.apache.commons.logging.Log;\n" +
                 "import org.apache.commons.logging.LogFactory;\n" +
-                "import org.zcx.netty.common.AbstractDynamicHandler;\n" +
-                "import org.zcx.netty.common.DynamicHandler;\n" +
-                "import org.zcx.netty.common.HandlerManager;\n" +
-                "import org.zcx.netty.common.bean.TestBean;\n" +
+                "import org.zcx.netty.handler.AbstractDynamicHandler;\n" +
+                "import org.zcx.netty.handler.DynamicHandler;\n" +
+                "import org.zcx.netty.handler.HandlerManager;\n" +
+                "import org.zcx.netty.bean.TestBean;\n" +
                 "import org.zcx.netty.common.utils.RequestHelper;\n" +
                 "\n" +
                 "import javax.annotation.Resource;\n" +

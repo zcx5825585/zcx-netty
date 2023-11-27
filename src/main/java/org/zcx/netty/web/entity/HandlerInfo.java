@@ -1,6 +1,6 @@
 package org.zcx.netty.web.entity;
 
-import org.zcx.netty.common.DynamicHandler;
+import org.zcx.netty.handler.DynamicHandler;
 
 import java.util.Map;
 
