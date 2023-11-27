@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractDynamicHandler<I> extends SimpleChannelInboundHandler<I> implements DynamicHandler {
 
     protected Map<String, ChannelHandlerContext> channelMap = new HashMap<>();
+    protected String handlerName = Introspector.decapitalize(this.getClass().getSimpleName());
 
     public abstract ChannelHandler[] initHandlers();
 
@@ -38,7 +39,7 @@ public abstract class AbstractDynamicHandler<I> extends SimpleChannelInboundHand
 
     @Override
     public String getHandlerName() {
-        return Introspector.decapitalize(this.getClass().getSimpleName());
+        return handlerName;
     }
 
     @Override

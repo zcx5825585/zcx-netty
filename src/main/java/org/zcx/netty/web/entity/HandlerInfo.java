@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class HandlerInfo {
     private Long id;
-    private String loaderType ="fileLoader";
+    private String loaderType = "fileLoader";
     private String javaSrc;
     private String handlerName;
     private String baseHandlerName;

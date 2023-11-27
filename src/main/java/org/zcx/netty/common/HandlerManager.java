@@ -31,11 +31,11 @@ public class HandlerManager {
         if (handler == null) {//打包并注册为bean
             beanRegisterService.registerBean(classRegisterInfo);
             handler = SpringUtils.getBean(handlerName, DynamicHandler.class);
-            if (handler instanceof ConfigurableBean) {//只注册为springbean 不注册为handler
-
-            } else {
+//            if (handler instanceof ConfigurableBean) {//只注册为springbean 不注册为handler
+//
+//            } else {
                 handlerMap.put(handlerName, handler);
-            }
+//            }
         }
         return handler;
     }

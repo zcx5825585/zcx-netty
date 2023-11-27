@@ -20,9 +20,6 @@ import java.util.Map;
 public class WsHandler extends AbstractWsHandler implements ConfigurableBean, DynamicHandler {
     private final Log log = LogFactory.getLog(this.getClass());
 
-    private String beanName = "wsHandler";
-
-    private boolean isConfigured = false;
     private String websocketPath;
 
     @Override
@@ -36,25 +33,19 @@ public class WsHandler extends AbstractWsHandler implements ConfigurableBean, Dy
     }
 
     @Override
-    public boolean isConfigured() {
-        return isConfigured;
-    }
-
-    @Override
     public void setBeanName(String beanName) {
-        this.beanName = beanName;
+        this.handlerName = beanName;
     }
 
     @Override
     public void config(Map<String, Object> param) {
         this.websocketPath = (String) param.get("websocketPath");
-        this.isConfigured = true;
     }
 
     @Override
     public List<BeanParam> getParamList() {
         return Arrays.asList(
-                new BeanParam("websocketPath", String.class)
+                new BeanParam("websocketPath","连接url", String.class)
         );
     }
 }

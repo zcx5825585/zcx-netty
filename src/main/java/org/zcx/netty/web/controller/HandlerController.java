@@ -44,8 +44,8 @@ public class HandlerController {
     }
 
     @GetMapping("connect")
-    public String connect(Long handlerId, String host, Integer port) throws Exception {
-        handlerService.connect(handlerId, host, port);
+    public String connect(Long handlerId) throws Exception {
+        handlerService.connect(handlerId);
         return "success";
     }
 

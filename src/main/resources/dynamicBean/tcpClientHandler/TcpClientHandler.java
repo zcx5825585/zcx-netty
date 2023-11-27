@@ -9,6 +9,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
 import org.zcx.netty.common.AbstractDynamicHandler;
+import org.zcx.netty.common.ClientHandler;
 import org.zcx.netty.common.DynamicHandler;
 import org.zcx.netty.common.HandlerManager;
 import org.zcx.netty.common.utils.SpringUtils;
@@ -17,10 +18,18 @@ import java.io.IOException;
 
 @Component
 @ChannelHandler.Sharable
-public class TcpClientHandler extends AbstractDynamicHandler<String> implements DynamicHandler {
+public class TcpClientHandler extends AbstractDynamicHandler<String> implements DynamicHandler, ClientHandler {
     private final Log log = LogFactory.getLog(this.getClass());
-    //127.0.0.1
-    //18021
+
+    @Override
+    public String getHost() {
+        return "127.0.0.1";
+    }
+
+    @Override
+    public Integer getPort() {
+        return 18021;
+    }
 
     public ChannelHandler[] initHandlers() {
         return new ChannelHandler[]{

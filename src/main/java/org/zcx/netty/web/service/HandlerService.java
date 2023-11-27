@@ -31,18 +31,21 @@ public class HandlerService {
 
     @PostConstruct
     public void init() {
-        add(new HandlerInfo(1L, "httpHandler", 1L));
-        add(new HandlerInfo(2L, "tcpHandler", 1L));
+//        add(new HandlerInfo(1L, "httpHandler", 1L));
+//        add(new HandlerInfo(2L, "tcpHandler", 1L));
 //        add(new HandlerInfo(3L, "wsHandler", 1L));
 //        add(new HandlerInfo(4L, "ws2Handler", 1L));
-        add(new HandlerInfo(5L, "http2Handler", 1L));
+//        add(new HandlerInfo(5L, "http2Handler", 1L));
 //        add(new HandlerInfo(6L, "tcpClientHandler", 2L));
-//        add(new HandlerInfo(7L, "mqttClientHandler", 2L));
+//        add(new HandlerInfo(7L, "singletonMqttClientHandler", 2L));
         //参数方式创建
         HandlerInfo configMqttClientHandler = new HandlerInfo(8L, "configMqttClientHandler", 2L);
-        configMqttClientHandler.setBaseHandlerName("mqttClientHandler");
+        configMqttClientHandler.setBaseHandlerName("singletonMqttClientHandler");
+        configMqttClientHandler.setLoaderType("configurableBean");
         Map<String, Object> params = new HashMap<>();
-        params.put("defaultTopic", "zcx/#");
+        params.put("host", "47.105.217.47");
+        params.put("port", 1883);
+//        params.put("defaultTopic", "zcx/#");
         params.put("userName", "smartsite");
         params.put("password", "smartsite12347988");
         configMqttClientHandler.setArgs(params);
@@ -158,13 +161,13 @@ public class HandlerService {
         return handlerManager.registerHandler(classRegisterInfo);
     }
 
-    public void connect(Long handlerId, String host, Integer port) {
+    public void connect(Long handlerId) {
         HandlerInfo handlerInfo = getById(handlerId);
         DynamicHandler handler = handlerInfo.getHandler();
         if (handler == null) {
             throw new HandlerException("handler未初始化");
         }
-        clientRunner.runHandlerAsClient(host, port, handler);
+        clientRunner.runHandlerAsClient(handler);
     }
 
     public void serverStart(Long handlerId,Integer port) throws Exception {

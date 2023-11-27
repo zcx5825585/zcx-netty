@@ -20,7 +20,7 @@ public class NettyUdpServer {
 //    @Resource
 //    private ServerGatewayHandler gatewayHandler;
 
-    private int port = 18021;
+    private int port = 18020;
 
     public void runHandlerAsServer(int port, DynamicHandler handler) throws Exception {
         //NioEventLoopGroup是用来处理IO操作的多线程事件循环器

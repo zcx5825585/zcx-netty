@@ -6,8 +6,10 @@ import io.netty.handler.codec.mqtt.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zcx.netty.common.AbstractDynamicHandler;
+import org.zcx.netty.common.ClientHandler;
 import org.zcx.netty.common.DynamicHandler;
 import org.zcx.netty.common.HandlerManager;
+import org.zcx.netty.common.exception.HandlerException;
 import org.zcx.netty.depended.mqtt.MqttMsgBack;
 import org.zcx.netty.depended.mqtt.dto.MyMqttMessage;
 
@@ -15,13 +17,19 @@ import javax.annotation.Resource;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<MqttMessage> implements DynamicHandler {
+public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<MqttMessage> implements DynamicHandler, ClientHandler {
     private final Logger log = LoggerFactory.getLogger(AbstractMqttClientHandler.class);
 
     protected Set<String> topicMap = new HashSet<>();
 
     @Resource
     protected MqttMsgBack mqttMsgBack;
+
+    @Override
+    public abstract String getHost();
+
+    @Override
+    public abstract Integer getPort();
 
     public abstract String getDefaultTopic();
 
@@ -37,6 +45,9 @@ public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<M
     @Override
     public ChannelHandler[] initHandlers() {
         DynamicHandler handler = HandlerManager.getDynamicHandler(getHandlerName());
+        if (handler==null){
+            throw new HandlerException(getHandlerName() + "未注册");
+        }
         return new ChannelHandler[]{
                 new MqttDecoder(1024 * 8),
                 MqttEncoder.INSTANCE,

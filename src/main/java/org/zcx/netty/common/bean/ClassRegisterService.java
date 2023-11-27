@@ -36,39 +36,38 @@ public class ClassRegisterService implements ApplicationContextAware {
                 return true;
             }
         }
-        //以其他bean为基础
-        if (genericApplicationContext.isBeanNameInUse(registerInfo.getBaseBeanName())) {
-            Class clazz = genericApplicationContext.getType(registerInfo.getBaseBeanName());
-            if (ConfigurableBean.class.isAssignableFrom(clazz)) {
-                try {
-                    ConfigurableBean object = (ConfigurableBean) clazz.getConstructor().newInstance();
-                    BeanParam.paramsCheck(object.getParamList(), registerInfo.getArgs());
-                } catch (BeanException e) {
-                    throw e;
-                } catch (Exception e) {
-                    throw new BeanException("参数校验失败");
-                }
-                genericApplicationContext.registerBean(beanName, clazz);
-                ConfigurableBean configurableBean = (ConfigurableBean) genericApplicationContext.getBean(beanName);
-                configurableBean.setBeanName(beanName);
-                configurableBean.config(registerInfo.getArgs());
-                return true;
-            } else {
-                throw new BeanException("基础bean不可配置");
-            }
-        }
+
         for (ClassRegisterInfo dependClass : registerInfo.getDependClass()) {
             if (dependClass.isSpringBean()) {
                 registerBean(dependClass);
-            }
-        }
-        //加载class
-        //加载依赖
-        for (ClassRegisterInfo dependClass : registerInfo.getDependClass()) {
-            if (!dependClass.isSpringBean()) {
+            } else {
                 loadClass(dependClass);
             }
         }
+        //以其他ConfigurableBean为基础
+        if ("configurableBean".equals(registerInfo.getLoaderType())) {
+            if (!genericApplicationContext.isBeanNameInUse(registerInfo.getBaseBeanName())) {
+                throw new BeanException("基础bean未注册");
+            }
+            Class clazz = genericApplicationContext.getType(registerInfo.getBaseBeanName());
+            if (!ConfigurableBean.class.isAssignableFrom(clazz)) {
+                throw new BeanException("bean不可配置");
+            }
+            try {
+                ConfigurableBean object = (ConfigurableBean) clazz.getConstructor().newInstance();
+                BeanParam.paramsCheck(object.getParamList(), registerInfo.getArgs());
+            } catch (BeanException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new BeanException("参数校验失败");
+            }
+            genericApplicationContext.registerBean(beanName, clazz);
+            ConfigurableBean configurableBean = (ConfigurableBean) genericApplicationContext.getBean(beanName);
+            configurableBean.setBeanName(beanName);
+            configurableBean.config(registerInfo.getArgs());
+            return true;
+        }
+        //加载class
         Class clazz = loadClass(registerInfo);
         //注册bean
         genericApplicationContext.registerBean(beanName, clazz);

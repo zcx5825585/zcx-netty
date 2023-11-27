@@ -7,11 +7,21 @@ import java.util.Map;
 
 public class BeanParam {
     private String name;
+    private String title;
     private Class clazz;
 
-    public BeanParam(String name, Class clazz) {
+    public BeanParam(String name, String title, Class clazz) {
         this.name = name;
+        this.title = title;
         this.clazz = clazz;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getName() {

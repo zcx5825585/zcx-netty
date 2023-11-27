@@ -8,13 +8,23 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.zcx.netty.common.ClientHandler;
 import org.zcx.netty.common.DynamicHandler;
+import org.zcx.netty.common.exception.HandlerException;
 
 @Component
 public class NettyTcpClientRunner {
     private final Logger log = LoggerFactory.getLogger(NettyTcpClientRunner.class);
 
-    public void runHandlerAsClient(String ip, int port, DynamicHandler handler) {
+    public void runHandlerAsClient(DynamicHandler handler) {
+        if (!(handler instanceof ClientHandler)) {
+            throw new HandlerException("不是客户端handler");
+        }
+        String ip = ((ClientHandler) handler).getHost();
+        Integer port = ((ClientHandler) handler).getPort();
+        if (ip == null || ip.length() < 1 || port == null || port == 0) {
+            throw new HandlerException("服务端ip或端口信息错误");
+        }
         new Bootstrap().group(new NioEventLoopGroup())
                 .channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<SocketChannel>() {
@@ -29,6 +39,7 @@ public class NettyTcpClientRunner {
                         log.info("connect {}:{} success.", ip, port);
                     } else {
                         log.error("connect {}:{} fail", ip, port, future.cause());
+                        throw new HandlerException("连接服务端 "+ip+":"+port+" 失败");
                     }
                 });
 
