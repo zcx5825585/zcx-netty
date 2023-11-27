@@ -35,12 +35,12 @@ public class HandlerService {
 //        add(new HandlerInfo(2L, "tcpHandler", 1L));
 //        add(new HandlerInfo(3L, "wsHandler", 1L));
 //        add(new HandlerInfo(4L, "ws2Handler", 1L));
-//        add(new HandlerInfo(5L, "http2Handler", 1L));
+        add(new HandlerInfo(5L, "http2Handler", 1L));
 //        add(new HandlerInfo(6L, "tcpClientHandler", 2L));
 //        add(new HandlerInfo(7L, "singletonMqttClientHandler", 2L));
         //参数方式创建
-        HandlerInfo configMqttClientHandler = new HandlerInfo(8L, "configMqttClientHandler", 2L);
-        configMqttClientHandler.setBaseHandlerName("singletonMqttClientHandler");
+        HandlerInfo configMqttClientHandler = new HandlerInfo(8L, "mqttClient_47_smartsite", 2L);
+        configMqttClientHandler.setBaseHandlerName("multiTopicMqttClientHandler");
         configMqttClientHandler.setLoaderType("configurableBean");
         Map<String, Object> params = new HashMap<>();
         params.put("host", "47.105.217.47");
@@ -151,8 +151,8 @@ public class HandlerService {
         HandlerInfo handlerInfo = handlerDao.getById(id);
         ClassRegisterInfo classRegisterInfo = new ClassRegisterInfo();
         classRegisterInfo.setBeanName(handlerInfo.getHandlerName());
-        classRegisterInfo.setPackageName(handlerInfo.getPackageName());
         classRegisterInfo.setLoaderType(handlerInfo.getLoaderType());
+        classRegisterInfo.setPackageName(handlerInfo.getPackageName());
         classRegisterInfo.setJavaSrc(handlerInfo.getJavaSrc());
         classRegisterInfo.setBaseBeanName(handlerInfo.getBaseHandlerName());
         classRegisterInfo.setArgs(handlerInfo.getArgs());

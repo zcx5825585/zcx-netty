@@ -22,7 +22,6 @@ public class HandlerManager {
         return handler;
     }
 
-
     public DynamicHandler registerHandler(ClassRegisterInfo classRegisterInfo) {
         String handlerName = classRegisterInfo.getBeanName();
         //初始化handler bean

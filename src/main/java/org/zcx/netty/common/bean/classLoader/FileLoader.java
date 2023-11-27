@@ -10,6 +10,7 @@ import javax.tools.ToolProvider;
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.regex.Matcher;
 
 @Component("fileLoader")
 public class FileLoader implements MyClassLoader {
@@ -33,12 +34,14 @@ public class FileLoader implements MyClassLoader {
     }
 
     public boolean compilerJava(ClassRegisterInfo registerInfo) {
-        String classPath = rootPath + registerInfo.getDirPath() + registerInfo.getClassName() + ".class"; //class路径
+        //package 和 文件夹路径需保持一致 否则加载可能出现问题
+        String dirPath = rootPath + registerInfo.getPackageName().replaceAll("\\.", Matcher.quoteReplacement(File.separator)) + File.separator;
+
+        String classPath = dirPath + registerInfo.getClassName() + ".class"; //class路径
         File classFile = new File(classPath);
         if (classFile.exists()) {
             if (registerInfo.isReCompiler()) {
                 classFile.delete();
-                String dirPath = rootPath + registerInfo.getDirPath();
                 File dir = new File(dirPath);
                 if (dir.isDirectory()) {
                     for (File file : dir.listFiles()) {
@@ -51,7 +54,7 @@ public class FileLoader implements MyClassLoader {
                 return true;
             }
         }
-        String javaPath = rootPath + registerInfo.getDirPath() + registerInfo.getClassName() + ".java"; //路径
+        String javaPath = dirPath + registerInfo.getClassName() + ".java"; //路径
         File javaFile = new File(javaPath);
         if (!javaFile.exists()) {
             throw new BeanException("编译class失败：java文件未找到");
@@ -64,4 +67,5 @@ public class FileLoader implements MyClassLoader {
         }
         return result == 0;
     }
+
 }

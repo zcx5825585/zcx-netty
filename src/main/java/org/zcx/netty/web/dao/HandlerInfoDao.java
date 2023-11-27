@@ -2,7 +2,6 @@ package org.zcx.netty.web.dao;
 
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
-import org.zcx.netty.common.HandlerManager;
 import org.zcx.netty.web.entity.HandlerInfo;
 
 import javax.annotation.Resource;
@@ -14,8 +13,6 @@ import java.util.stream.Collectors;
 @Component
 @DependsOn({"handlerGroupDao"})
 public class HandlerInfoDao {
-    @Resource
-    private HandlerManager handlerManager;
     @Resource
     private HandlerGroupDao groupDao;
 

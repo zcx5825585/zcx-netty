@@ -31,11 +31,11 @@ public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<M
     @Override
     public abstract Integer getPort();
 
-    public abstract String getDefaultTopic();
-
     public abstract String getUserName();
 
     public abstract String getPassword();
+
+    public abstract String getDefaultTopic();
 
     public abstract void channelRead1(ChannelHandlerContext ctx, MqttMessage mqttMessage);
 

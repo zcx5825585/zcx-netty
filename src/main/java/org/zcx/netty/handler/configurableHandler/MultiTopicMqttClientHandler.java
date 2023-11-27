@@ -27,15 +27,15 @@ import java.util.Map;
 
 @Component
 @ChannelHandler.Sharable
-public class SingletonMqttClientHandler extends AbstractMqttClientHandler implements DynamicHandler, ConfigurableBean {
-    private final Logger log = LoggerFactory.getLogger(SingletonMqttClientHandler.class);
+public class MultiTopicMqttClientHandler extends AbstractMqttClientHandler implements DynamicHandler, ConfigurableBean {
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     private Map<String, MqttTopicHandler> topicHandlerMap = new HashMap<>();
 
-    private String host = "47.105.217.47";
-    private Integer port = 1883;
-    private String userName = "smartsite";
-    private String password = "smartsite12347988";
+    private String host;
+    private Integer port;
+    private String userName;
+    private String password;
 
     @Override
     public void setBeanName(String beanName) {
@@ -58,30 +58,6 @@ public class SingletonMqttClientHandler extends AbstractMqttClientHandler implem
                 new BeanParam("userName","账号", String.class),
                 new BeanParam("password","密码", String.class)
         );
-    }
-
-    @Override
-    public String getHost() {
-        return host;
-    }
-
-    @Override
-    public Integer getPort() {
-        return port;
-    }
-
-    @Override
-    public String getDefaultTopic(){
-        return null;
-    }
-    @Override
-    public String getUserName() {
-        return userName;
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
     }
 
     public void sendMsg1(String topicName, String msg) {
@@ -132,5 +108,28 @@ public class SingletonMqttClientHandler extends AbstractMqttClientHandler implem
         return channelMap.keySet().stream().findFirst().get();
     }
 
+    @Override
+    public String getHost() {
+        return host;
+    }
 
+    @Override
+    public Integer getPort() {
+        return port;
+    }
+
+    @Override
+    public String getUserName() {
+        return userName;
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getDefaultTopic(){
+        return null;
+    }
 }

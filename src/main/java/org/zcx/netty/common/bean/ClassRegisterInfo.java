@@ -1,21 +1,28 @@
 package org.zcx.netty.common.bean;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.regex.Matcher;
+import java.util.*;
 
 public class ClassRegisterInfo {
+    //加载方式
+    //fileLoader 以文件方式加载 必需字段 packageName
+    //scriptMemoryLoader 以文本方式加载 必需字段 packageName javaSrc
+    //configurableBean 参数配置 ConfigurableBean的实现类 必需字段 baseBeanName args
     private String loaderType;
+    //包名
     private String packageName;
+    //bean名称
     private String beanName;
+    //要配置的ConfigurableBean的实现类
     private String baseBeanName;
+    //配置参数
     private Map<String, Object> args;
-    private boolean reCompiler = false;
-    private boolean springBean = true;
+    //java文本
     private String javaSrc;
+    //是否重新编译
+    private boolean reCompiler = false;
+    //是否注册为bean
+    private boolean springBean = true;
+    //需要注册的依赖
     private List<ClassRegisterInfo> dependClass = Collections.emptyList();
 
     public String getLoaderType() {
@@ -43,9 +50,6 @@ public class ClassRegisterInfo {
     }
 
     public String getBaseBeanName() {
-        if (baseBeanName == null) {
-            return beanName;
-        }
         return baseBeanName;
     }
 
@@ -54,11 +58,7 @@ public class ClassRegisterInfo {
     }
 
     public String getClassName() {
-        return getBaseBeanName().substring(0, 1).toUpperCase(Locale.ROOT) + getBaseBeanName().substring(1);
-    }
-
-    public String getDirPath(){
-        return getPackageName().replaceAll("\\.", Matcher.quoteReplacement(File.separator)) + File.separator;
+        return beanName.substring(0, 1).toUpperCase(Locale.ROOT) + beanName.substring(1);
     }
 
     public boolean isReCompiler() {

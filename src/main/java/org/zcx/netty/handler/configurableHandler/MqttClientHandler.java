@@ -31,7 +31,6 @@ public class MqttClientHandler extends AbstractMqttClientHandler implements Conf
     private String userName;
     private String password;
 
-
     @Override
     public void config(Map<String, Object> param) {
         this.defaultTopic = (String) param.get("defaultTopic");
@@ -68,11 +67,6 @@ public class MqttClientHandler extends AbstractMqttClientHandler implements Conf
     }
 
     @Override
-    public String getDefaultTopic() {
-        return defaultTopic;
-    }
-
-    @Override
     public String getUserName() {
         return userName;
     }
@@ -80,6 +74,11 @@ public class MqttClientHandler extends AbstractMqttClientHandler implements Conf
     @Override
     public String getPassword() {
         return password;
+    }
+
+    @Override
+    public String getDefaultTopic() {
+        return defaultTopic;
     }
 
     @Override
