@@ -1,7 +1,7 @@
 package dynamicBean.mqttTopicHandler;
 
 import org.springframework.stereotype.Component;
-import org.zcx.netty.mqtt.MqttTopicHandler;
+import org.zcx.netty.mqtt.topicHandler.MqttTopicHandler;
 
 @Component("myMqttTopicHandler")
 public class MyMqttTopicHandler implements MqttTopicHandler {

@@ -1,7 +1,9 @@
-package org.zcx.netty.mqtt;
+package org.zcx.netty.mqtt.topicHandler;
 
 import org.springframework.stereotype.Component;
 import org.zcx.netty.bean.ClassRegisterInfo;
+import org.zcx.netty.mqtt.topicHandler.MqttTopicHandler;
+import org.zcx.netty.mqtt.topicHandler.TopicHandlerManager;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;

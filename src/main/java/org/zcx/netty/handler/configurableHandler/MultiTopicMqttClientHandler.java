@@ -15,7 +15,7 @@ import org.zcx.netty.bean.BeanParam;
 import org.zcx.netty.bean.ConfigurableBean;
 import org.zcx.netty.common.exception.HandlerException;
 import org.zcx.netty.common.utils.SpringUtils;
-import org.zcx.netty.mqtt.MqttTopicHandler;
+import org.zcx.netty.mqtt.topicHandler.MqttTopicHandler;
 import org.zcx.netty.mqtt.TopicUtil;
 import org.zcx.netty.mqtt.dto.MyMqttMessage;
 import org.zcx.netty.handler.abstractHandler.AbstractMqttClientHandler;
@@ -102,6 +102,7 @@ public class MultiTopicMqttClientHandler extends AbstractMqttClientHandler imple
         }
     }
 
+    //todo 是否只有一个连接？
     private String getChannelId() {
         return channelMap.keySet().stream().findFirst().get();
     }

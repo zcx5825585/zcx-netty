@@ -3,7 +3,7 @@ package org.zcx.netty.web.service;
 import org.springframework.stereotype.Service;
 import org.zcx.netty.handler.DynamicHandler;
 import org.zcx.netty.bean.ClassRegisterInfo;
-import org.zcx.netty.mqtt.TopicHandlerManager;
+import org.zcx.netty.mqtt.topicHandler.TopicHandlerManager;
 import org.zcx.netty.handler.configurableHandler.MultiTopicMqttClientHandler;
 
 import javax.annotation.Resource;

@@ -1,4 +1,4 @@
-package org.zcx.netty.mqtt;
+package org.zcx.netty.mqtt.topicHandler;
 
 import org.springframework.stereotype.Component;
 import org.zcx.netty.bean.ClassRegisterInfo;

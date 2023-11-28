@@ -1,4 +1,4 @@
-package org.zcx.netty.mqtt;
+package org.zcx.netty.mqtt.topicHandler;
 
 public interface MqttTopicHandler {
 
