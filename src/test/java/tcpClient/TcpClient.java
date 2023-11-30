@@ -16,7 +16,7 @@ public class TcpClient {
 
     public static void main(String[] args) {
         String ip = "127.0.0.1";
-        int port = 18021;
+        int port = 18022;
         Bootstrap bootstrap = new Bootstrap();
         bootstrap.group(new NioEventLoopGroup()).channel(NioSocketChannel.class)
                 .handler(new ChannelInitializer<SocketChannel>() {

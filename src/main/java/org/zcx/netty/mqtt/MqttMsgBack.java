@@ -60,11 +60,23 @@ public class MqttMsgBack {
         if (mqttConnectReturnCode.name().equals(MqttConnectReturnCode.CONNECTION_ACCEPTED.name())) {
             //连接成功
             log.info("服务端连接验证成功");
+            startPing(ctx);
         } else {
             log.error("服务端连接验证失败：" + mqttConnectReturnCode.name());
         }
     }
 
+    /**
+     * 连接中断取消心跳发送
+     *
+     * @param ctx
+     */
+    public void receiveDisConnection(ChannelHandlerContext ctx) {
+        ScheduledFuture<?> scheduledFuture = TimerData.keepAliveFutureMap.remove(ctx.channel().id().asShortText());
+        if (scheduledFuture != null) {
+            scheduledFuture.cancel(true);
+        }
+    }
     /**
      * 确认订阅回复
      *
@@ -170,16 +182,24 @@ public class MqttMsgBack {
     }
 
     /**
-     * 心跳发送
+     * 开始发送心跳
+     *
+     * @param ctx
+     */
+    public void startPing(ChannelHandlerContext ctx) {
+        ScheduledFuture<?> scheduledFuture = TimerData.keepAliveThreadPoolExecutor.scheduleAtFixedRate(new KeepAliveTime(ctx), 60, 60, TimeUnit.SECONDS);
+        TimerData.keepAliveFutureMap.put(ctx.channel().id().asShortText(), scheduledFuture);
+        //todo 超时未回复断开
+    }
+
+    /**
+     * 接收心跳确认
      *
      * @param ctx
      * @param mqttMessage
      */
     public void pingReq(ChannelHandlerContext ctx, MqttMessage mqttMessage) {
         if (ctx != null && ctx.channel().isActive()) {
-            MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PINGREQ, false, MqttQoS.AT_MOST_ONCE, false, 0);
-            MqttMessage mqttMessageBack = new MqttMessage(fixedHeader);
-            ctx.writeAndFlush(mqttMessageBack);
         } else {
             log.error("心跳提醒：服务端连接异常~");
         }
@@ -221,6 +241,7 @@ public class MqttMsgBack {
             log.error("发送消息提醒：服务端连接异常~");
         }
     }
+
     private void cachePublishMsg(MqttQoS qos, ByteBuf byteBuf, MqttPublishVariableHeader variableHeader, MqttFixedHeader mqttFixedHeaderInfo, ChannelHandlerContext context, Long waitTime) {
         //缓存一份消息，规定时间内没有收到ack，用作重发，重发时将isDup设置为true,代表重复消息
         MqttFixedHeader fixedHeader = new MqttFixedHeader(MqttMessageType.PUBLISH, true, qos, false, mqttFixedHeaderInfo.remainingLength());
@@ -256,6 +277,7 @@ public class MqttMsgBack {
 //        ScheduledFuture<?> scheduledFuture = TimerData.scheduledThreadPoolExecutor.scheduleAtFixedRate(new MonitorMsgTime(variableHeader.packetId(), cachePubMessage, context), waitTime, waitTime, TimeUnit.MILLISECONDS);
 //        TimerData.scheduledFutureMap.put(variableHeader.packetId(), scheduledFuture);
 //    }
+
     /**
      * 订阅主题
      *
@@ -382,4 +404,5 @@ public class MqttMsgBack {
         MqttMessage mqttMessageBack = new MqttMessage(mqttFixedHeaderBack, mqttMessageIdVariableHeaderBack);
         ctx.writeAndFlush(mqttMessageBack);
     }
+
 }

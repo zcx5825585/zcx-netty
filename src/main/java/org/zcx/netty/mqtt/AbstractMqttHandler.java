@@ -68,6 +68,11 @@ public abstract class AbstractMqttHandler extends SimpleChannelInboundHandler<Mq
         mqttMsgBack.connect(ctx, getUserName(), getPassword());
     }
 
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive(ctx);
+        mqttMsgBack.receiveDisConnection(ctx);
+    }
 
     public void subscribe(String channelId, String topic) {
         if (topic != null && topic.length() > 0 && topicMap.add(topic)) {

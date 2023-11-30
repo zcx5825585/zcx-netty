@@ -5,26 +5,34 @@ import org.zcx.netty.bean.ClassRegisterInfo;
 import org.zcx.netty.bean.MyClassLoader;
 import org.zcx.netty.common.exception.BeanException;
 
+import javax.annotation.PostConstruct;
 import javax.tools.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.CharBuffer;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Component("scriptMemoryLoader")
 public class ScriptMemoryLoader implements MyClassLoader {
     protected Map<String, byte[]> classBytes = new HashMap<String, byte[]>();
-    private MemoryClassLoader classLoader = new MemoryClassLoader();
+    private List<MemoryClassLoader> classLoaderList;
+    private MemoryJavaFileManager fileManager;
+
+    @PostConstruct
+    public void init() {
+        classLoaderList = new ArrayList<>();
+        MemoryClassLoader classLoader = new MemoryClassLoader();
+        classLoaderList.add(classLoader);
+        fileManager = new MemoryJavaFileManager(ToolProvider.getSystemJavaCompiler());
+    }
 
     @Override
     public Class loadClass(ClassRegisterInfo registerInfo) {
         String className = registerInfo.getPackageName() + "." + registerInfo.getClassName() + ".java";
         String javaSrc = registerInfo.getJavaSrc();
-        compile(className, javaSrc);
+        fileManager.compile(className, javaSrc);
         try {
             Class clazz = loadClass(registerInfo.getPackageName() + "." + registerInfo.getClassName());
             return clazz;
@@ -44,26 +52,20 @@ public class ScriptMemoryLoader implements MyClassLoader {
      */
     public boolean compile(String javaName, String javaSrc) {
         // 调用java编译器接口
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        StandardJavaFileManager stdManager = compiler.getStandardFileManager(null, null, null);
 
-        try (MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager)) {
-            JavaFileObject javaFileObject = manager.makeStringSource(javaName, javaSrc);
-            JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, null, null, Arrays.asList(javaFileObject));
-            if (task.call()) {
-                classBytes.putAll(manager.getClassBytes());
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         return true;
     }
 
     public Class<?> loadClass(String className) throws ClassNotFoundException {
+        for (MemoryClassLoader classLoader : classLoaderList) {
+            if (!classLoader.isClassLoaded(className)) {
+                return classLoader.loadClass(className);
+            }
+        }
+        MemoryClassLoader classLoader = new MemoryClassLoader();
+        classLoaderList.add(classLoader);
         return classLoader.loadClass(className);
     }
-
 
 
     /**
@@ -77,14 +79,18 @@ public class ScriptMemoryLoader implements MyClassLoader {
             super(new URL[0], MemoryClassLoader.class.getClassLoader());
         }
 
+        public boolean isClassLoaded(String name) {
+            return this.findLoadedClass(name) != null;
+        }
+
         @Override
-        protected Class<?> findClass(String name)
+        public Class<?> findClass(String name)
                 throws ClassNotFoundException {
-            byte[] buf = classBytes.get(name);
+            byte[] buf = fileManager.getClassMap().get(name);
             if (buf == null) {
                 return super.findClass(name);
             }
-            classBytes.remove(name);
+            fileManager.getClassMap().remove(name);
             return defineClass(name, buf, 0, buf.length);
         }
     }
@@ -96,9 +102,15 @@ public class ScriptMemoryLoader implements MyClassLoader {
 
         private final static String EXT = ".java";// Java源文件的扩展名
         private Map<String, byte[]> classBytes;// 用于存放.class文件的内存
+        private JavaCompiler compiler;
 
-        public MemoryJavaFileManager(JavaFileManager fileManager) {
-            super(fileManager);
+        public Map<String, byte[]> getClassMap(){
+            return classBytes;
+        }
+
+        public MemoryJavaFileManager(JavaCompiler compiler) {
+            super(compiler.getStandardFileManager(null, null, null));
+            this.compiler = compiler;
             classBytes = new HashMap<String, byte[]>();
         }
 
@@ -113,6 +125,14 @@ public class ScriptMemoryLoader implements MyClassLoader {
 
         @Override
         public void flush() throws IOException {
+        }
+
+        public void compile(String javaName, String javaSrc) {
+            JavaFileObject javaFileObject = makeStringSource(javaName, javaSrc);
+            JavaCompiler.CompilationTask task = compiler.getTask(null, this, null, null, null, Arrays.asList(javaFileObject));
+            if (task.call()) {
+                classBytes.putAll(getClassBytes());
+            }
         }
 
         /**

@@ -182,4 +182,9 @@ public class HandlerService {
             throw new HandlerException("端口已占用");
         }
     }
+
+    public void serverStop(Long handlerId) throws Exception {
+        HandlerInfo handlerInfo = getById(handlerId);
+        serverRunner.closeServer( handlerInfo.getHandlerName());
+    }
 }

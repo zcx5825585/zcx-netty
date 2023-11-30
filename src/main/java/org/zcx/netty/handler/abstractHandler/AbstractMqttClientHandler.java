@@ -95,6 +95,12 @@ public abstract class AbstractMqttClientHandler extends AbstractDynamicHandler<M
     }
 
     @Override
+    public void channelInactive0(ChannelHandlerContext ctx) throws Exception {
+        super.channelInactive0(ctx);
+        mqttMsgBack.receiveDisConnection(ctx);
+    }
+
+    @Override
     public void channelRead0(ChannelHandlerContext ctx, MqttMessage mqttMessage) {
         if (null != mqttMessage) {
             log.info("接收mqtt消息：" + mqttMessage);

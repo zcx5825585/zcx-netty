@@ -55,18 +55,18 @@ public class TcpClientHandler extends ChannelInboundHandlerAdapter {
         InetSocketAddress inSocket = (InetSocketAddress) ctx.channel().remoteAddress();
         String clientIp = inSocket.getAddress().getHostAddress();
         System.out.println(clientIp);
-        new Thread(() -> {
-            int count =0;
-            while (true) {
-                count++;
-                try {
-                    Thread.sleep(3 * 1000L);
-                    ctx.writeAndFlush("test "+count);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
+//        new Thread(() -> {
+//            int count =0;
+//            while (true) {
+//                count++;
+//                try {
+//                    Thread.sleep(3 * 1000L);
+//                    ctx.writeAndFlush("test "+count);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }).start();
     }
 
     /**

@@ -1,10 +1,7 @@
 package org.zcx.netty.handler.bootstrap;
 
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -13,13 +10,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.zcx.netty.handler.DynamicHandler;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Component
 public class NettyTcpServerRunner {
     private final Logger log = LoggerFactory.getLogger(NettyTcpServerRunner.class);
-//    @Resource
-//    private ServerGatewayHandler gatewayHandler;
+    private Map<String,Channel> channelMap = new HashMap<>();
 
-    private int port = 18021;
+    /** 关闭当前server */
+    public void closeServer(String handlerName) {
+        Channel serverChannel = channelMap.get(handlerName);
+        if (serverChannel != null){
+            log.info("close server " + handlerName);
+            serverChannel.close();
+        }
+    }
 
     public void runHandlerAsServer(int port, DynamicHandler handler) throws Exception {
         //NioEventLoopGroup是用来处理IO操作的多线程事件循环器
@@ -41,6 +47,8 @@ public class NettyTcpServerRunner {
         server.childOption(ChannelOption.SO_KEEPALIVE, true);
         ChannelFuture f = server.bind(port).sync();// 绑定端口，开始接收进来的连接
         log.info(port + "服务端启动成功...");
+        Channel serverChannel = f.channel();
+        channelMap.put(handler.getHandlerName(),serverChannel);
         // 监听服务器关闭监听
         f.channel().closeFuture().addListener((future) -> {
             bossGroup.shutdownGracefully(); //关闭EventLoopGroup，释放掉所有资源包括创建的线程
