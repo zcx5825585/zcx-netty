@@ -10,33 +10,29 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.zcx.netty.handler.DynamicHandler;
+import org.zcx.netty.handler.HandlerManager;
+import org.zcx.netty.handler.dynamicHandler.UdpHandler;
 
 @Component
 public class NettyUdpServerRunner {
-    private final Logger log = LoggerFactory.getLogger(NettyUdpServerRunner.class);
+    private static final Logger log = LoggerFactory.getLogger(NettyUdpServerRunner.class);
 //    @Resource
 //    private ServerGatewayHandler gatewayHandler;
 
-    private int port = 18020;
+    public static int port = 18020;
 
-    public void runHandlerAsServer(int port, DynamicHandler handler) throws Exception {
+    public static void main(String[] args) throws InterruptedException {
+//    }
+//    public void runHandlerAsServer(int port, DynamicHandler handler) throws Exception {
         //NioEventLoopGroup是用来处理IO操作的多线程事件循环器
         EventLoopGroup bossGroup = new NioEventLoopGroup();  // 用来接收进来的连接
         Bootstrap server = new Bootstrap();//是一个启动NIO服务的辅助启动类
         server.group(bossGroup)
                 .channel(NioDatagramChannel.class)  // 这里告诉Channel如何接收新的连接
-                .handler(new ChannelInitializer<SocketChannel>() {
-                    @Override
-                    protected void initChannel(SocketChannel ch) throws Exception {
-//                        ch.pipeline().addLast(new TestHandler());
-                        // 自定义处理类
-//                        ch.pipeline().addLast(gatewayHandler);
-                        ch.pipeline().addLast(handler.initHandlers());
-                    }
-                });
-        server.option(ChannelOption.SO_BACKLOG, 128);
+                .handler(new UdpHandler());
         server.option(ChannelOption.SO_BROADCAST, true);
         ChannelFuture f = server.bind(port).sync();// 绑定端口，开始接收进来的连接
         log.info(port + "服务端启动成功...");
@@ -46,8 +42,9 @@ public class NettyUdpServerRunner {
         });
     }
 
+
 //    @Override
 //    public void run(String... args) throws Exception {
-//        this.start();
+//        runHandlerAsServer(port,null);
 //    }
 }

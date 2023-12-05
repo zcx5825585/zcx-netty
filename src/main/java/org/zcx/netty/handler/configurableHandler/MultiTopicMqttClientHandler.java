@@ -30,7 +30,8 @@ import java.util.Map;
 public class MultiTopicMqttClientHandler extends AbstractMqttClientHandler implements DynamicHandler, ConfigurableBean {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    private Map<String, MqttTopicHandler> topicHandlerMap = new HashMap<>();
+    //一个topic对应多个handler
+    private Map<String, Map<String, MqttTopicHandler>> topicHandlerMap = new HashMap<>();
 
     private String host;
     private Integer port;
@@ -69,7 +70,8 @@ public class MultiTopicMqttClientHandler extends AbstractMqttClientHandler imple
         if (topicHandler == null){
             throw new HandlerException("mqtt消息处理类不存在");
         }
-        topicHandlerMap.put(topicName, topicHandler);
+        Map<String, MqttTopicHandler> oneTopicHandlerMap = topicHandlerMap.computeIfAbsent(topicName, k -> new HashMap<>());
+        oneTopicHandlerMap.put(topicHandlerName, topicHandler);
         super.subscribe(getChannelId(), topicName);
     }
 
@@ -94,9 +96,11 @@ public class MultiTopicMqttClientHandler extends AbstractMqttClientHandler imple
         String fullTopic = mqttPublishMessage.variableHeader().topicName();
         for (String topic : topicHandlerMap.keySet()) {
             if (TopicUtil.match(topic, fullTopic)) {
-                MqttTopicHandler topicHandler = topicHandlerMap.get(topic);
-                if (topicHandler != null) {
-                    topicHandler.handleMassage(fullTopic, message);
+                Map<String, MqttTopicHandler> oneTopicHandlerMap = topicHandlerMap.get(topic);
+                if (oneTopicHandlerMap != null && !oneTopicHandlerMap.isEmpty()) {
+                    for (MqttTopicHandler topicHandler : oneTopicHandlerMap.values()) {
+                        topicHandler.handleMassage(fullTopic, message);
+                    }
                 }
             }
         }

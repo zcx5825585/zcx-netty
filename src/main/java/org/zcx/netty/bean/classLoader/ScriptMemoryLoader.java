@@ -42,19 +42,6 @@ public class ScriptMemoryLoader implements MyClassLoader {
         }
     }
 
-    /**
-     * 通过类名和其代码（Java代码字符串），编译得到字节码，返回类名及其对应类的字节码，封装于Map中，值得注意的是，
-     * 平常类中就编译出来的字节码只有一个类，但是考虑到内部类的情况， 会出现很多个类名及其字节码，所以用Map封装方便。
-     *
-     * @param javaName 类名
-     * @param javaSrc  Java源码
-     * @return map
-     */
-    public boolean compile(String javaName, String javaSrc) {
-        // 调用java编译器接口
-
-        return true;
-    }
 
     public Class<?> loadClass(String className) throws ClassNotFoundException {
         for (MemoryClassLoader classLoader : classLoaderList) {
@@ -127,6 +114,14 @@ public class ScriptMemoryLoader implements MyClassLoader {
         public void flush() throws IOException {
         }
 
+        /**
+         * 通过类名和其代码（Java代码字符串），编译得到字节码，返回类名及其对应类的字节码，封装于Map中，值得注意的是，
+         * 平常类中就编译出来的字节码只有一个类，但是考虑到内部类的情况， 会出现很多个类名及其字节码，所以用Map封装方便。
+         *
+         * @param javaName 类名
+         * @param javaSrc  Java源码
+         * @return map
+         */
         public void compile(String javaName, String javaSrc) {
             JavaFileObject javaFileObject = makeStringSource(javaName, javaSrc);
             JavaCompiler.CompilationTask task = compiler.getTask(null, this, null, null, null, Arrays.asList(javaFileObject));

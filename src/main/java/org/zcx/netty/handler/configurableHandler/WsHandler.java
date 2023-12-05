@@ -2,13 +2,13 @@ package org.zcx.netty.handler.configurableHandler;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import org.zcx.netty.handler.DynamicHandler;
+import org.springframework.stereotype.Component;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.stereotype.Component;
-import org.zcx.netty.handler.DynamicHandler;
-import org.zcx.netty.handler.abstractHandler.AbstractWsHandler;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.zcx.netty.bean.BeanParam;
+import org.zcx.netty.handler.abstractHandler.AbstractWsHandler;
 import org.zcx.netty.bean.ConfigurableBean;
 
 import java.util.Arrays;
@@ -29,7 +29,7 @@ public class WsHandler extends AbstractWsHandler implements ConfigurableBean, Dy
 
     @Override
     public void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) {
-        log.info(getHandlerName() + "接收到websocket消息 " + "\n" + msg.toString());
+        log.info(getHandlerName() + "接收到websocket消息 " + "\n" + msg.text());
     }
 
     @Override
