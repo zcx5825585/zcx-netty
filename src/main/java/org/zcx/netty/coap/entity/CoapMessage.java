@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import org.zcx.netty.coap.common.CoapContentFormat;
 import org.zcx.netty.coap.common.CoapMessageType;
 import org.zcx.netty.coap.common.CoapOptionType;
+import org.zcx.netty.coap.utils.BytesUtils;
 
 import java.net.InetSocketAddress;
 
@@ -49,6 +50,7 @@ public class CoapMessage {
 
     @Override
     public String toString() {
+
         return "CoapMessage{" +
                 "version=" + version +
                 ", messageType=" + messageType +

@@ -32,12 +32,11 @@ public class MyCoapHandler extends SimpleChannelInboundHandler<CoapMessage> impl
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, CoapMessage coapMessage)
             throws Exception {
-
         try {
+            log.debug(String.format("接收到payload：%s", coapMessage.getPayload()));
 
             CoapMessage ack = coapMessage.createAck(69);
-            log.debug(String.format("接收到payload：%s", coapMessage.getPayload()));
-            ack.setPayload("My block ack!");
+            ack.setPayload("My ack!");
 
             log.debug(String.format("生成数据：%s", ack.toString()));
 
