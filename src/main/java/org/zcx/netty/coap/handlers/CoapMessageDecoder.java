@@ -23,20 +23,20 @@ public class CoapMessageDecoder extends SimpleChannelInboundHandler<DatagramPack
         ctx.fireChannelRead(coapMessage);
     }
 
+    //  |       0       |       1       |       2       |       3       |
+    //  |7 6 5 4 3 2 1 0|7 6 5 4 3 2 1 0|7 6 5 4 3 2 1 0|7 6 5 4 3 2 1 0|
+    //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //	|Ver| T |  TKL  |      Code     |          Message ID           |
+    //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //	|   Token (if any, TKL bytes) ...
+    //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //	|   Options (if any) ...
+    //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //	|1 1 1 1 1 1 1 1|    Payload (if any) ...
+    //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     protected CoapMessage decode(ByteBuf in) throws Exception {
         CoapMessage coapMessage = new CoapMessage();
         ByteBuf buf = in;
-//        int firstByte = buf.readByte() & 0xFF;
-//        System.out.println((firstByte / (int) Math.pow(2, 6) % (int) Math.pow(2, 2)));
-//        System.out.println((firstByte / (int) Math.pow(2, 4) % (int) Math.pow(2, 2)));
-//        System.out.println((firstByte % (int) Math.pow(2, 4)));
-//        firstByte = buf.readByte() & 0xFF;
-//        System.out.println(firstByte);
-//        int a = 0;
-//        a = (int) (Math.pow(2, 8) * (buf.readByte() & 0xFF));
-//        a = a + buf.readByte() & 0xFF;
-//        System.out.println(a);
-//        buf =in.copy();
         int encodedHeader = buf.readInt();//读取32bit
         int version = (encodedHeader >>> 30) & 0x03;//读取2bit
         int messageType = (encodedHeader >>> 28) & 0x03;//读取2bit
@@ -50,11 +50,12 @@ public class CoapMessageDecoder extends SimpleChannelInboundHandler<DatagramPack
         coapMessage.setMessageID(messageID);
 
         byte[] token = new byte[tokenLength];
-        buf.readBytes(token);
+        buf.readBytes(token);//根据tokenLength读取token
         String tokenStr = HexUtil.encodeHexStr(token);
         coapMessage.setToken(token);
 
         if (buf.readableBytes() > 0) {
+            //如果未读取完，尝试读取options
             CoapMessageOptions options = readOptions(buf);
             coapMessage.setOptions(options);
         }
@@ -67,25 +68,55 @@ public class CoapMessageDecoder extends SimpleChannelInboundHandler<DatagramPack
         return coapMessage;
     }
 
+    //    7   6   5   4   3   2   1   0
+    //	+---------------+---------------+
+    //	|               |               |
+    //	|  Option Delta | Option Length |   1 byte
+    //	|               |               |
+    //	+---------------+---------------+
+    //	\                               \
+    //	/         Option Delta          /   0-2 bytes
+    //	\          (extended)           \
+    //	+-------------------------------+
+    //	\                               \
+    //	/         Option Length         /   0-2 bytes
+    //	\          (extended)           \
+    //	+-------------------------------+
+    //	\                               \
+    //	/                               /
+    //	\                               \
+    //	/         Option Value          /   0 or more bytes
+    //	\                               \
+    //	/                               /
+    //	\                               \
+    //	+-------------------------------+
     private CoapMessageOptions readOptions(ByteBuf buffer) {
         CoapMessageOptions options = new CoapMessageOptions();
 
         //Decode the options
+        //所有的option必须按实际option编号的递增排列，某一个option和上一个option之间的option编号差值为delta
         int previousOptionNumber = 0;
         int firstByte = buffer.readByte() & 0xFF;
 
+        //payload 前带有标识 11111111 即 0xFF
         while (firstByte != 0xFF && buffer.readableBytes() >= 0) {
             int optionDelta = (firstByte & 0xF0) >>> 4;
             int optionLength = firstByte & 0x0F;
-//            System.out.println(optionDelta);
-//            System.out.println(optionLength);
 
+            //*	Option Delta：4-bit无符号整型。值0-12代表option delta。其它3个值作为特殊情况保留：
+            //  *	当值为**13**：有一个8-bit无符号整型（extended）跟随在第一个字节之后，本option的实际delta是这个8-bit值加13。
+            //	*	当值为**14**：有一个16-bit无符号整型（网络字节序）（extended）跟随在第一个字节之后，本option的实际delta是这个16-bit值加269。
+            //	*	当值为**15**：保留为将来使用。如果这个字段被设置为值15，必须当作消息格式错误来处理。//todo 未处理
             if (optionDelta == 13) {
                 optionDelta += buffer.readByte() & 0xFF;
             } else if (optionDelta == 14) {
                 optionDelta = 269 + ((buffer.readByte() & 0xFF) << 8) + (buffer.readByte() & 0xFF);
             }
 
+            //*	Option Length：4-bit无符号整数。值0-12代表这个option值的长度，单位是字节。其它3个值是特殊保留的：
+            //	*	当值为**13**：有一个8-bit无符号整型跟随在第一个字节之后，本option的实际长度是这个8-bit值加13。
+            //	*	当值为**14**：一个16-bit无符号整型（网络字节序）跟随在第一个字节之后，本option的实际长度是这个16-bit值加269。
+            //	*	当值为**15**：保留为将来使用。如果这个字段被设置为值15，必须当作消息格式错误来处理。//todo 未处理
             if (optionLength == 13) {
                 optionLength += buffer.readByte() & 0xFF;
             } else if (optionLength == 14) {
@@ -110,6 +141,7 @@ public class CoapMessageDecoder extends SimpleChannelInboundHandler<DatagramPack
                 firstByte = buffer.readByte() & 0xFF;
             } else {
                 // this is necessary if there is no payload and the last option is empty (e.g. UintOption with value 0)
+                //当最后一项optionLength为0时且没有payload时，buffer.readableBytes()=0，如果不更新firstByte，会再次进入循环，此处也可直接使用break
                 firstByte = 0xFF;
             }
 

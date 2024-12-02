@@ -11,7 +11,10 @@ import io.netty.channel.socket.DatagramPacket;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.stereotype.Component;
+import org.zcx.netty.coap.common.CoapMessageCode;
+import org.zcx.netty.coap.common.CoapMessageType;
 import org.zcx.netty.coap.common.CoapOptionType;
+import org.zcx.netty.coap.entity.CoapBlock;
 import org.zcx.netty.coap.entity.CoapMessage;
 import org.zcx.netty.coap.entity.CoapMessageOptions;
 import org.zcx.netty.coap.utils.BytesUtils;
@@ -21,6 +24,8 @@ import org.zcx.netty.handler.HandlerManager;
 import java.net.InetSocketAddress;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 @Component
 public class TestGatewayHandler extends SimpleChannelInboundHandler<DatagramPacket> implements DynamicHandler {
@@ -28,6 +33,7 @@ public class TestGatewayHandler extends SimpleChannelInboundHandler<DatagramPack
     private ChannelHandlerContext ctx;
     private CoapMessageDecoder decoder = new CoapMessageDecoder();
     private CoapMessageEncoder encoder = new CoapMessageEncoder();
+    private ServerBlock2Handler block2Handler = new ServerBlock2Handler();
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -46,52 +52,59 @@ public class TestGatewayHandler extends SimpleChannelInboundHandler<DatagramPack
             InetSocketAddress sender = packet.sender();
             CoapMessage inMsg = decoder.decode(in.copy());
             if (sender.getPort() != 5683) {
-                log.debug(String.format("请求：%s", inMsg));
                 CoapMessageOptions options = inMsg.getOptions();
-                if (options.containsKey(CoapOptionType.BLOCK_2)){
-                    int[]result = BytesUtils.handlerBlock(options.get(CoapOptionType.BLOCK_2));
-                    log.debug(String.format("NUM: %s", result[0]));
-                    log.debug(String.format("M: %s", result[1]));
-                    log.debug(String.format("SZX: %s", (1 << (result[2] + 4))));
-                }
-                if (options.containsKey(CoapOptionType.SIZE_2)){
-                    log.debug(String.format("Block2 size: %s", BytesUtils.bytesToInt(options.get(CoapOptionType.SIZE_2))));
-                }
-                if (options.containsKey(CoapOptionType.BLOCK_1)){
-                    int[] blockInfo =BytesUtils.handlerBlock(options.get(CoapOptionType.BLOCK_1));
-                    if (blockInfo[0]==1){
-                        CoapMessage ack = inMsg.createAck(95);
-                        ack.setPayload("");
-                        log.debug(String.format("block1生成数据：%s", ack.toString()));
-                        ctx.writeAndFlush(new DatagramPacket(encoder.doEncode(ack), sender));
-                    }else {
-                        CoapMessage ack = inMsg.createAck(69);
-//                log.debug(String.format("生成：%s", ack));
-                        this.sender = sender;
-                        InetSocketAddress socketAddress = new InetSocketAddress("127.0.0.1", 5683);
-                        ctx.writeAndFlush(new DatagramPacket(in.copy(), socketAddress));
+                log.debug(String.format("请求：%s", inMsg));
+                this.sender = sender;
+                //观察模式
+                // 客户端发送请求 options包含observe ,值为任意
+                // 服务端响应    options包含observe 值为当前序号（版本？），在资源中维护 payload返回说明信息（无固定格式）
+                // 服务端发送通知 options包含observe 值为当前序号（版本？），在资源中维护 payload为资源的值
+                //请求：CoapMessage{version=1, messageType=0, tokenLength=8, messageCode=1, messageID=11388, token='bf765867e3c032bf', options=6:null;11:hello;, payload=''}
+                //响应：CoapMessage{version=1, messageType=2, tokenLength=8, messageCode=69, messageID=11388, token='bf765867e3c032bf', options=6:4;12:null;, payload='/127.0.0.1:18020subscription successful,resource:/hello'}
+                //响应：CoapMessage{version=1, messageType=1, tokenLength=8, messageCode=69, messageID=41076, token='bf765867e3c032bf', options=6:5;12:null;, payload='{"value":"4"}'}
+                //todo 非block请求可以处理，block如何处理？
+                CoapMessage ack = inMsg.createAck(CoapMessageCode.CONTENT_205);
+                CoapMessageOptions ackOptions = ack.getOptions();
+                ackOptions.put(6,new byte[1]);
+                ackOptions.putEmpty(12);
+                ack.setPayload("/127.0.0.1:18020subscription successful,resource:/hello");
+                log.debug(String.format("生成：%s", ack));
+                ctx.writeAndFlush(new DatagramPacket(encoder.doEncode(ack), this.sender));
+                new Thread(() -> {
+                    try {
+                        int i = 0;
+                        while (true) {
+                            Thread.sleep(1000); // 等待5秒
+                            try {
+                                ack.setPayload("{\"value\":\""+i+"\"}");
+                                ack.setMessageID(ack.getMessageID()+1);
+                                ack.setMessageType(CoapMessageType.NON);
+                                ack.getOptions().putObject(6,i);
+                                log.debug(String.format("生成：%s", ack));
+                                ctx.writeAndFlush(new DatagramPacket(encoder.doEncode(ack), this.sender));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            i++;
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                }
+                }).start();
+                InetSocketAddress socketAddress = new InetSocketAddress("127.0.0.1", 5683);
+                ctx.writeAndFlush(new DatagramPacket(in.copy(), socketAddress));
+
             } else {
                 CoapMessageOptions options = inMsg.getOptions();
-                if (options.containsKey(CoapOptionType.BLOCK_2)){
-                    int[]result = BytesUtils.handlerBlock(options.get(CoapOptionType.BLOCK_2));
-                    log.debug(String.format("NUM: %s", result[0]));
-                    log.debug(String.format("M: %s", result[1]));
-                    log.debug(String.format("SZX: %s", (1 << (result[2] + 4))));
-                }
-                if (options.containsKey(CoapOptionType.SIZE_2)){
-                    log.debug(String.format("Block2 size: %s", BytesUtils.bytesToInt(options.get(CoapOptionType.SIZE_2))));
-                }
                 log.debug(String.format("响应：%s", inMsg));
                 ctx.writeAndFlush(new DatagramPacket(in.copy(), this.sender));
-                this.sender = null;
             }
             // 下面进行业务代码处理
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 
     public static String bytesToBinaryString(byte[] bytes) {
         StringBuilder binaryString = new StringBuilder();

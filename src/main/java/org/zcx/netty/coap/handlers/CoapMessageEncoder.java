@@ -6,26 +6,49 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.DatagramPacket;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.CharsetUtil;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.util.StringUtils;
 import org.zcx.netty.coap.entity.CoapMessage;
 import org.zcx.netty.coap.entity.CoapMessageOptions;
 
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class CoapMessageEncoder extends MessageToMessageEncoder<CoapMessage> {
+    private final Log log = LogFactory.getLog(this.getClass());
+
     @Override
     protected void encode(ChannelHandlerContext ctx, CoapMessage msg, List<Object> out) throws Exception {
+        log.debug(String.format("响应数据：%s", msg));
         ByteBuf buf = doEncode(msg);
-        out.add(new DatagramPacket(buf, msg.getSender()));
+        if (msg.getGroupSenders() == null || msg.getGroupSenders().isEmpty()) {
+            out.add(new DatagramPacket(buf, msg.getSender()));
+        }else {
+            for (InetSocketAddress oneSender : msg.getGroupSenders()) {
+                out.add(new DatagramPacket(buf, oneSender));
+            }
+        }
     }
 
+    //  |       0       |       1       |       2       |       3       |
+    //  |7 6 5 4 3 2 1 0|7 6 5 4 3 2 1 0|7 6 5 4 3 2 1 0|7 6 5 4 3 2 1 0|
+    //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //	|Ver| T |  TKL  |      Code     |          Message ID           |
+    //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //	|   Token (if any, TKL bytes) ...
+    //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //	|   Options (if any) ...
+    //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+    //	|1 1 1 1 1 1 1 1|    Payload (if any) ...
+    //	+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
     protected ByteBuf doEncode(CoapMessage msg) throws Exception {
         ByteBuf buf = Unpooled.buffer();
         encodeHeader(buf, msg);
         encodeOptions(buf, msg.getOptions());
         if (!StringUtils.isEmpty(msg.getPayload())) {
-            buf.writeByte(255);//payload开始的标识
+            buf.writeByte(0xff);//payload开始的标识
             byte[] bytes = msg.getPayload().getBytes(CharsetUtil.UTF_8);
             buf.writeBytes(bytes);
         }
@@ -37,6 +60,7 @@ public class CoapMessageEncoder extends MessageToMessageEncoder<CoapMessage> {
         //Encode options one after the other and append buf option to the buf
         int previousOptionNumber = 0;
 
+        //所有的option必须按实际option编号的递增排列，某一个option和上一个option之间的option编号差值为delta
         List<Integer> optionNumberList = options.keySet().stream().sorted().collect(Collectors.toList());
 
         for (Integer optionNumber : optionNumberList) {
@@ -46,56 +70,40 @@ public class CoapMessageEncoder extends MessageToMessageEncoder<CoapMessage> {
         }
     }
 
+    private int[] turnNum(int num) {
+        int[] arr = new int[3];
+        if (num < 13) {
+            arr[0] = num & 0xFF;
+        } else if (num < 269) {
+            arr[0] = 13 & 0xFF;
+            arr[1] = (num - 13) & 0xFF;
+        } else {
+            arr[0] = 14 & 0xFF;
+            arr[1] = ((num - 269) & 0xFF00) >>> 8;
+            arr[2] = (num - 269) & 0xFF;
+        }
+        return arr;
+    }
+
     protected void encodeOption(ByteBuf buffer, int optionNumber, byte[] optionValue, int prevNumber) {
         int optionDelta = optionNumber - prevNumber;
         int optionLength = optionValue.length;
 
-
-        if (optionDelta < 13) {
-            //option delta < 13
-            if (optionLength < 13) {
-                buffer.writeByte(((optionDelta & 0xFF) << 4) | (optionLength & 0xFF));
-            } else if (optionLength < 269) {
-                buffer.writeByte(((optionDelta << 4) & 0xFF) | (13 & 0xFF));
-                buffer.writeByte((optionLength - 13) & 0xFF);
-            } else {
-                buffer.writeByte(((optionDelta << 4) & 0xFF) | (14 & 0xFF));
-                buffer.writeByte(((optionLength - 269) & 0xFF00) >>> 8);
-                buffer.writeByte((optionLength - 269) & 0xFF);
-            }
-        } else if (optionDelta < 269) {
-            //13 <= option delta < 269
-            if (optionLength < 13) {
-                buffer.writeByte(((13 & 0xFF) << 4) | (optionLength & 0xFF));
-                buffer.writeByte((optionDelta - 13) & 0xFF);
-            } else if (optionLength < 269) {
-                buffer.writeByte(((13 & 0xFF) << 4) | (13 & 0xFF));
-                buffer.writeByte((optionDelta - 13) & 0xFF);
-                buffer.writeByte((optionLength - 13) & 0xFF);
-            } else {
-                buffer.writeByte((13 & 0xFF) << 4 | (14 & 0xFF));
-                buffer.writeByte((optionDelta - 13) & 0xFF);
-                buffer.writeByte(((optionLength - 269) & 0xFF00) >>> 8);
-                buffer.writeByte((optionLength - 269) & 0xFF);
-            }
-        } else {
-            //269 <= option delta < 65805
-            if (optionLength < 13) {
-                buffer.writeByte(((14 & 0xFF) << 4) | (optionLength & 0xFF));
-                buffer.writeByte(((optionDelta - 269) & 0xFF00) >>> 8);
-                buffer.writeByte((optionDelta - 269) & 0xFF);
-            } else if (optionLength < 269) {
-                buffer.writeByte(((14 & 0xFF) << 4) | (13 & 0xFF));
-                buffer.writeByte(((optionDelta - 269) & 0xFF00) >>> 8);
-                buffer.writeByte((optionDelta - 269) & 0xFF);
-                buffer.writeByte((optionLength - 13) & 0xFF);
-            } else {
-                buffer.writeByte(((14 & 0xFF) << 4) | (14 & 0xFF));
-                buffer.writeByte(((optionDelta - 269) & 0xFF00) >>> 8);
-                buffer.writeByte((optionDelta - 269) & 0xFF);
-                buffer.writeByte(((optionLength - 269) & 0xFF00) >>> 8);
-                buffer.writeByte((optionLength - 269) & 0xFF);
-            }
+        int[] deltaArr = turnNum(optionDelta);
+        int[] lengthArr = turnNum(optionLength);
+        int first = ((deltaArr[0]) << 4) | (lengthArr[0]);
+        buffer.writeByte(first);
+        if (deltaArr[1] > 0) {
+            buffer.writeByte(deltaArr[1]);
+        }
+        if (deltaArr[2] > 0) {
+            buffer.writeByte(deltaArr[2]);
+        }
+        if (lengthArr[1] > 0) {
+            buffer.writeByte(lengthArr[1]);
+        }
+        if (lengthArr[2] > 0) {
+            buffer.writeByte(lengthArr[2]);
         }
 
         //Write option value

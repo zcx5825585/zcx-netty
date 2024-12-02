@@ -1,12 +1,14 @@
 package org.zcx.netty.coap.entity;
 
-import com.alibaba.fastjson.JSON;
+import cn.hutool.core.util.HexUtil;
 import org.zcx.netty.coap.common.CoapContentFormat;
 import org.zcx.netty.coap.common.CoapMessageType;
 import org.zcx.netty.coap.common.CoapOptionType;
-import org.zcx.netty.coap.utils.BytesUtils;
 
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CoapMessage {
     private int version;
@@ -18,12 +20,9 @@ public class CoapMessage {
     private CoapMessageOptions options;
     private String payload;
     private InetSocketAddress sender;
+    private List<InetSocketAddress> groupSenders;
 
-    public CoapMessage createAck(){
-        return createAck(69);
-    }
-
-    public CoapMessage createAck(int messageCode){
+    public CoapMessage createAck(int messageCode) {
         CoapMessage ack = new CoapMessage();
         ack.setVersion(1);
         ack.setMessageType(CoapMessageType.ACK);
@@ -35,15 +34,18 @@ public class CoapMessage {
         CoapMessageOptions options = new CoapMessageOptions();
         ack.setOptions(options);
 
-        //响应option
-        if (this.getOptions().containsKey(CoapOptionType.CONTENT_FORMAT)) {
-            options.putEmpty(CoapOptionType.CONTENT_FORMAT);
-        }else {
-            options.putObject(CoapOptionType.CONTENT_FORMAT, CoapContentFormat.APP_JSON);
-        }
-        if (this.getOptions().containsKey(CoapOptionType.BLOCK_1)) {
-            byte[] block = this.getOptions().get(CoapOptionType.BLOCK_1);
-            options.put(CoapOptionType.BLOCK_1, block);
+        if (this.getOptions() != null) {
+            //响应option
+            if (!this.getOptions().containsKey(CoapOptionType.CONTENT_FORMAT)) {
+                options.putObject(CoapOptionType.CONTENT_FORMAT, CoapContentFormat.APP_JSON);
+            }
+            if (this.getOptions().containsKey(CoapOptionType.OBSERVE)) {
+                options.put(CoapOptionType.URI_PATH, this.getOptions().get(CoapOptionType.URI_PATH));
+            }
+            if (this.getOptions().containsKey(CoapOptionType.BLOCK_1)) {
+                byte[] block = this.getOptions().get(CoapOptionType.BLOCK_1);
+                options.put(CoapOptionType.BLOCK_1, block);
+            }
         }
         return ack;
     }
@@ -53,12 +55,12 @@ public class CoapMessage {
 
         return "CoapMessage{" +
                 "version=" + version +
-                ", messageType=" + messageType +
-                ", tokenLength=" + tokenLength +
-                ", messageCode=" + messageCode +
-                ", messageID=" + messageID +
-                ", token='" + token + '\'' +
-                ", options=" + JSON.toJSONString(options) +
+                ",\tmessageType=" + messageType +
+                ",\ttokenLength=" + tokenLength +
+                ",\tmessageCode=" + messageCode +
+                ",\tmessageID=" + messageID +
+                ",\ttoken='" + getTokenString() + '\'' +
+                (options != null ? ",\toptions=" + options.toString() : "") +
                 ", payload='" + payload + '\'' +
                 '}';
     }
@@ -69,6 +71,14 @@ public class CoapMessage {
 
     public void setSender(InetSocketAddress sender) {
         this.sender = sender;
+    }
+
+    public List<InetSocketAddress> getGroupSenders() {
+        return groupSenders;
+    }
+
+    public void setGroupSenders(List<InetSocketAddress> groupSenders) {
+        this.groupSenders = groupSenders;
     }
 
     public int getVersion() {
@@ -109,6 +119,38 @@ public class CoapMessage {
 
     public void setMessageID(int messageID) {
         this.messageID = messageID;
+    }
+
+    public String getTokenString() {
+        return HexUtil.encodeHexStr(token);
+    }
+
+    public String getResourceUri() {
+        String uri = "";
+        if (this.getOptions().containsKey(11)) {
+            uri = new String(this.getOptions().get(11), StandardCharsets.UTF_8);
+        }
+        return uri;
+    }
+
+    public String getCacheKey() {
+        if (this.getOptions().containsKey(CoapOptionType.OBSERVE)) {
+            String uri = getResourceUri();
+            String senderString = getSenderString();
+            return uri + "-" + senderString;
+        } else {
+            return HexUtil.encodeHexStr(token);
+        }
+//        String uri = new String(this.getOptions().get(11), StandardCharsets.UTF_8);
+//        return uri+"-"+this.sender.getAddress().getHostAddress()+":"+this.sender.getPort();
+    }
+
+    public String getSenderString() {
+        String senderString = "";
+        if (this.sender != null) {
+            senderString = this.sender.getAddress().getHostAddress() + ":" + this.sender.getPort();
+        }
+        return senderString;
     }
 
     public byte[] getToken() {
