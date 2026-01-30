@@ -18,19 +18,26 @@ public class CoapRunner {
     public static int port = 18020;
 
     //实现功能：
+    //服务端功能
     //正常情况接收单块con/non请求并返回响应
     //接收block1分块请求并返回响应,分块、丢包错误处理
     //接收block1分块请求并返回响应，更改块大小的情况
     //接收请求后返回block2分块相应
     //接收请求后返回block2分块相应,更改块大小的情况
+    //观察模式
+    // 服务端响应    options包含observe 值为当前序号（版本？），在资源中维护 payload返回说明信息（无固定格式）
+    // 服务端发送通知 options包含observe 值为当前序号（版本？），在资源中维护 payload为资源的值
+    //客户端功能
     //todo：
+    //服务端功能
+    //客户端功能
     //发送单块con/non请求并接收响应
     //发送block1分块请求并接收响应
     //发送请求后接收block2分块相应
     //观察模式
     // 客户端发送请求 options包含observe ,值为任意
-    // 服务端响应    options包含observe 值为当前序号（版本？），在资源中维护 payload返回说明信息（无固定格式）
-    // 服务端发送通知 options包含observe 值为当前序号（版本？），在资源中维护 payload为资源的值
+    //资源发现
+    //
     //请求：CoapMessage{version=1, messageType=0, tokenLength=8, messageCode=1, messageID=11388, token='bf765867e3c032bf', options=6:null;11:hello;, payload=''}
     //响应：CoapMessage{version=1, messageType=2, tokenLength=8, messageCode=69, messageID=11388, token='bf765867e3c032bf', options=6:4;12:null;, payload='/127.0.0.1:18020subscription successful,resource:/hello'}
     //响应：CoapMessage{version=1, messageType=1, tokenLength=8, messageCode=69, messageID=41076, token='bf765867e3c032bf', options=6:5;12:null;, payload='{"value":"4"}'}

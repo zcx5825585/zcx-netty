@@ -70,8 +70,8 @@ public class ServerObserveHandler extends SimpleChannelInboundHandler<CoapMessag
             if (0 == observe) {//0为订阅
                 CoapMessage ack = coapMessage.createAck(CoapMessageCode.CONTENT_205);
                 CoapMessageOptions ackOptions = ack.getOptions();
-                ackOptions.putObject(6, 0);
-                ackOptions.putEmpty(12);
+                ackOptions.putObject(CoapOptionType.OBSERVE, 0);
+                ackOptions.putEmpty(CoapOptionType.CONTENT_FORMAT);
                 String senderString = ack.getSenderString();
                 String resourceUri = coapMessage.getResourceUri();
                 ack.setPayload(senderString + " subscription successful,resource:" + resourceUri);
@@ -85,12 +85,12 @@ public class ServerObserveHandler extends SimpleChannelInboundHandler<CoapMessag
                     messageCache.put(resourceUri, subscription);
                 } else {
                     CoapMessageOptions oldOption = subscription.getOptions();
-                    int oldVersion = BytesUtils.bytesToInt(oldOption.get(6));
+                    int oldVersion = BytesUtils.bytesToInt(oldOption.get(CoapOptionType.OBSERVE));
                     //已经有数据了，返回一次
                     ack.setPayload(subscription.getPayload());
                     ack.setMessageID(BytesUtils.getNextMessageId(ack.getMessageID()));
                     ack.setMessageType(CoapMessageType.NON);
-                    ack.getOptions().putObject(6, oldVersion);
+                    ack.getOptions().putObject(CoapOptionType.OBSERVE, oldVersion);
                     Thread.sleep(500);//消息已发送，间隔太短客户端会丢弃消息，需要添加一段间隔   为什么丢弃？
                     log.debug(String.format("生成：%s", ack));
                     ctx.writeAndFlush(ack);
